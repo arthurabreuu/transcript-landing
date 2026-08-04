@@ -1,6 +1,12 @@
 import { Nav } from './components/Nav'
 import { Hero } from './components/Hero'
-import { HowItWorks, TimeMath, Features, Security } from './components/Sections'
+import {
+  HowItWorks,
+  Audience,
+  TimeMath,
+  Features,
+  Security,
+} from './components/Sections'
 import { Pricing, Faq, FinalCta, Footer } from './components/Closing'
 
 /** Luz ambiente fixa: auroras que o liquid glass refrata (receita do Hub). */
@@ -28,6 +34,7 @@ export default function App() {
       <main>
         <Hero />
         <HowItWorks />
+        <Audience />
         <TimeMath />
         <Features />
         <Security />

@@ -52,17 +52,17 @@ const STEPS = [
   {
     n: '01',
     title: 'Toque em gravar',
-    body: 'No começo da consulta, um toque. O Transcript trabalha em silêncio enquanto você atende.',
+    body: 'No começo da consulta, da reunião ou da aula: um toque. O Transcript trabalha em silêncio.',
   },
   {
     n: '02',
-    title: 'Atenda olhando nos olhos',
-    body: 'Nada de digitar durante o atendimento. Cada fala é transcrita com o falante identificado.',
+    title: 'Esteja inteiro na conversa',
+    body: 'Nada de anotar enquanto falam com você. Cada fala é transcrita com o falante identificado.',
   },
   {
     n: '03',
-    title: 'Receba o documento pronto',
-    body: 'Ao encerrar, a evolução clínica organizada chega em segundos. Revise, ajuste e pronto.',
+    title: 'Receba o resultado certo',
+    body: 'Ao encerrar, chega o que aquele contexto pede: evolução clínica, ata com tarefas ou resumo com ideias.',
   },
 ]
 
@@ -92,6 +92,71 @@ export function HowItWorks() {
             <h3 className="mt-3 text-[16px] font-semibold text-ink-900">{s.title}</h3>
             <p className="mt-2 text-[13.5px] font-light leading-relaxed text-ink-400">
               {s.body}
+            </p>
+          </motion.div>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+/* ---------- Para quem é ---------- */
+
+const AUDIENCES = [
+  {
+    title: 'Nutricionistas',
+    body: 'Recordatório, antropometria e anamnese alimentar preenchidos enquanto você conversa com o paciente. A consulta rende o dobro.',
+    featured: true,
+  },
+  {
+    title: 'Médicos e clínicas',
+    body: 'Queixa, evolução e conduta registradas no padrão do prontuário, com cada falante identificado.',
+    featured: false,
+  },
+  {
+    title: 'Psicólogos e terapeutas',
+    body: 'O registro da sessão sem tirar os olhos de quem fala. Áudio apagado, texto criptografado.',
+    featured: false,
+  },
+  {
+    title: 'Times e negócios',
+    body: 'Reuniões viram atas, calls viram briefings, brainstorms viram planos com dono e prazo.',
+    featured: false,
+  },
+]
+
+export function Audience() {
+  return (
+    <section className="mx-auto max-w-6xl px-5 pb-24">
+      <Head
+        eyebrow="Para quem é"
+        title={
+          <>
+            <span className="font-light">Feito para quem </span>
+            <span className="gradient-text">vive de ouvir pessoas.</span>
+          </>
+        }
+      />
+      <div className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {AUDIENCES.map((a, i) => (
+          <motion.div
+            key={a.title}
+            className={`glass-top-light hover-card rounded-[22px] border p-6 ${
+              a.featured ? 'glass-strong !border-brand/35 border-2' : 'glass-subtle'
+            }`}
+            initial={{ opacity: 0, y: 18 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-50px' }}
+            transition={{ duration: 0.5, delay: i * 0.07, ease: EASE }}
+          >
+            {a.featured && (
+              <span className="mb-3 inline-block rounded-pill bg-brand/10 px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-brand">
+                Ecossistema Syntria
+              </span>
+            )}
+            <h3 className="text-[15px] font-semibold text-ink-900">{a.title}</h3>
+            <p className="mt-1.5 text-[13px] font-light leading-relaxed text-ink-400">
+              {a.body}
             </p>
           </motion.div>
         ))}
@@ -131,15 +196,15 @@ export function TimeMath() {
         <div className="px-6 py-16 text-center sm:px-12 sm:py-20">
           <p className="eyebrow text-brand-300">Faça a conta</p>
           <h2 className="mx-auto mt-3 max-w-3xl font-display text-3xl font-semibold tracking-tight sm:text-[40px]">
-            <span className="font-light">Dez minutos de prontuário por consulta são </span>
+            <span className="font-light">Dez minutos de anotações por conversa são </span>
             <span className="gradient-text-dark font-semibold">
               duas semanas do seu ano.
             </span>
           </h2>
           <div className="mx-auto mt-12 grid max-w-3xl gap-3 sm:grid-cols-3">
             {[
-              { big: '10 min', small: 'de registro manual por consulta' },
-              { big: '× 16', small: 'consultas por dia, todos os dias' },
+              { big: '10 min', small: 'de registro manual por conversa' },
+              { big: '× 16', small: 'consultas ou reuniões por dia' },
               { big: '≈ 88h', small: 'por ano viram tempo de atendimento' },
             ].map((s, i) => (
               <motion.div
@@ -162,8 +227,8 @@ export function TimeMath() {
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.35 }}
           >
-            Com o Transcript, o registro acontece durante a consulta, não depois
-            dela. Você fecha o dia com os prontuários no lugar e a cabeça livre.
+            Com o Transcript, o registro acontece durante a conversa, não depois
+            dela. Você fecha o dia com tudo documentado e a cabeça livre.
           </motion.p>
         </div>
       </motion.div>
@@ -176,23 +241,23 @@ export function TimeMath() {
 const FEATURES = [
   {
     title: 'Falantes identificados',
-    body: 'Quem disse o quê, separado automaticamente: profissional de um lado, paciente do outro.',
+    body: 'Quem disse o quê, separado automaticamente, seja consulta, reunião ou entrevista.',
   },
   {
-    title: 'Documentos clínicos prontos',
-    body: 'Evolução e anamnese estruturadas a partir da conversa, no seu padrão.',
+    title: 'A ficha se preenche sozinha',
+    body: 'Anamnese, evolução e antropometria na clínica; ata, briefing e tarefas na reunião. No seu padrão.',
   },
   {
     title: 'Modo Clínico e modo Geral',
     body: 'Consultas com vocabulário clínico, reuniões e aulas com transcrição direta. Ou os dois no Completo.',
   },
   {
-    title: 'Pacientes organizados',
-    body: 'Cada gravação no histórico do paciente certo. Busque qualquer coisa que foi dita.',
+    title: 'Tudo organizado por pessoa',
+    body: 'Cada gravação no histórico certo: paciente, cliente ou projeto. Busque qualquer coisa que foi dita.',
   },
   {
     title: 'Copiloto por voz',
-    body: 'Converse com o assistente sobre seus atendimentos: criar paciente, buscar, resumir.',
+    body: 'Converse com o assistente sobre suas gravações: buscar, resumir, gerar ideias a partir do que foi dito.',
   },
   {
     title: 'Privacidade por padrão',
@@ -208,7 +273,7 @@ export function Features() {
         title={
           <>
             <span className="font-light">Mais que transcrição: </span>
-            <span className="gradient-text">o consultório em ordem.</span>
+            <span className="gradient-text">seu dia em ordem.</span>
           </>
         }
       />
@@ -264,8 +329,8 @@ export function Security() {
           </svg>
         </span>
         <h2 className="mt-5 font-display text-2xl font-semibold tracking-tight text-ink-900 sm:text-3xl">
-          <span className="font-light">A consulta é do paciente. </span>
-          <span className="gradient-text">E fica entre vocês.</span>
+          <span className="font-light">O que foi dito </span>
+          <span className="gradient-text">fica entre vocês.</span>
         </h2>
         <p className="mx-auto mt-4 max-w-xl text-[14px] font-light leading-relaxed text-ink-400">
           O áudio é processado e apagado: fica só o texto, criptografado. Excluir

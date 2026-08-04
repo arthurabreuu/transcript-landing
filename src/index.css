@@ -170,13 +170,44 @@ canvas {
   animation: caret-blink 0.9s steps(1) infinite;
 }
 
+/* Waveform viva do palco */
+@keyframes wave-bar {
+  0%,
+  100% {
+    transform: scaleY(0.25);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+.wv {
+  transform-origin: center;
+  animation: wave-bar 1.15s ease-in-out infinite;
+}
+
+/* Ponto REC pulsando */
+@keyframes rec-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+.rec-dot {
+  animation: rec-blink 1.2s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
   }
   .cta-glow,
   .stagger > *,
-  .caret {
+  .caret,
+  .wv,
+  .rec-dot {
     animation: none;
   }
 }
