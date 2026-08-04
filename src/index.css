@@ -1,0 +1,182 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --brand: #006ff5;
+  --ink: #0d2847;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+* {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  margin: 0;
+  background: #f4f7fb;
+  color: #0d2847;
+  font-family: 'Open Sans', system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+canvas {
+  display: block;
+}
+
+::selection {
+  background: rgba(0, 111, 245, 0.2);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: #c9d6e8;
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a9bfdd;
+  background-clip: content-box;
+}
+
+/* ---------------- Vocabulário Syntria (pegada do Hub) ---------------- */
+
+@layer components {
+  .eyebrow {
+    @apply font-mono text-[11px] font-medium uppercase tracking-[0.22em] text-ink-300;
+  }
+  .eyebrow-brand {
+    @apply eyebrow text-brand;
+  }
+  .glass {
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(20px) saturate(170%);
+    -webkit-backdrop-filter: blur(20px) saturate(170%);
+    box-shadow: 0 8px 32px -8px rgba(31, 64, 120, 0.16);
+  }
+  .glass-strong {
+    background: rgba(255, 255, 255, 0.68);
+    border: 1px solid rgba(255, 255, 255, 0.78);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    box-shadow: 0 8px 32px -8px rgba(31, 64, 120, 0.18);
+  }
+  .glass-subtle {
+    background: rgba(255, 255, 255, 0.38);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(16px) saturate(160%);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+    box-shadow: 0 4px 20px -6px rgba(31, 64, 120, 0.12);
+  }
+  /* Vidro sem backdrop-filter, para elementos em movimento */
+  .glass-flat {
+    background: rgba(255, 255, 255, 0.82);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+  }
+  .hover-card {
+    @apply transition duration-200 hover:border-brand/40 hover:shadow-card-hover;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-pill px-6 py-3 text-sm font-semibold transition-all duration-150;
+  }
+  .btn-brand {
+    @apply btn bg-brand text-white shadow-glow hover:bg-brand-600 active:scale-[0.98];
+  }
+  .btn-ghost {
+    @apply btn border border-ink-100 bg-white/80 text-ink-700 hover:border-ink-700 hover:text-ink-900 active:scale-[0.98];
+  }
+}
+
+.glass-top-light {
+  position: relative;
+}
+.glass-top-light::before {
+  content: '';
+  position: absolute;
+  inset: 0 14px auto 14px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.95), transparent);
+  pointer-events: none;
+}
+
+.gradient-text {
+  background: linear-gradient(105deg, #006ff5 0%, #88bcf5 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+.gradient-text-dark {
+  background: linear-gradient(105deg, #b7d9ff 0%, #4d9fff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(0, 111, 245, 0.35), 0 0 44px rgba(0, 111, 245, 0.14);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(0, 111, 245, 0.55), 0 0 64px rgba(0, 111, 245, 0.24);
+  }
+}
+.cta-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes enterUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.stagger > * {
+  animation: enterUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.stagger > *:nth-child(1) { animation-delay: 0.02s; }
+.stagger > *:nth-child(2) { animation-delay: 0.07s; }
+.stagger > *:nth-child(3) { animation-delay: 0.12s; }
+.stagger > *:nth-child(4) { animation-delay: 0.17s; }
+.stagger > *:nth-child(n + 5) { animation-delay: 0.22s; }
+
+/* Caret de digitação da transcrição */
+@keyframes caret-blink {
+  0%,
+  55% {
+    opacity: 1;
+  }
+  56%,
+  100% {
+    opacity: 0;
+  }
+}
+.caret {
+  animation: caret-blink 0.9s steps(1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .cta-glow,
+  .stagger > *,
+  .caret {
+    animation: none;
+  }
+}
