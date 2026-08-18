@@ -29,6 +29,7 @@ export default {
         },
         rec: '#EF4444',
         ok: '#10B981',
+        warn: '#F59E0B',
       },
       fontFamily: {
         sans: ['"Open Sans"', 'system-ui', 'sans-serif'],

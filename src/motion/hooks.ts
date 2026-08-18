@@ -28,7 +28,8 @@ export function useLite() {
 
 /**
  * Marca a seção com data-live conforme entra/sai da viewport; a regra CSS
- * [data-live='false'] pausa todos os loops (.float-bob, .orb, .minute, .phonon).
+ * [data-live='false'] pausa todos os loops (.float-bob, .orb, .minute, .wv,
+ * .rec-dot, .caret, .cta-glow::before).
  */
 export function useSectionLive(ref: RefObject<HTMLElement | null>) {
   const inView = useInView(ref, { amount: 0.15 })

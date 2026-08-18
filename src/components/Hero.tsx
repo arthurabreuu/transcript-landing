@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   AnimatePresence,
   motion,
@@ -11,375 +11,36 @@ import {
 import { EASE, SNAP, SOFT } from '../motion/tokens'
 import { useLite, useMediaQuery, useSectionLive, useTilt } from '../motion/hooks'
 import { MaskRise } from '../motion/primitives'
+import { CONTEXTS } from './hero/contexts'
+import { useSceneClock } from './hero/useSceneClock'
+import { RecorderChrome, Sentence } from './hero/SpeechBar'
+import { DocSheet, SheetStack } from './hero/DocSheet'
 
-const SCENE_MS = 7200
-const WORD_MS = 80
 const MANUAL_RESUME_MS = 14000
 
 /**
- * Palco vivo do hero: UM palco, muitos contextos. Um trilho de chips
- * (Consulta, Reunião, Aula, Palestra...) controla qual cena o palco
- * encena; o autoplay avança sozinho com barra de progresso no chip
- * ativo, e qualquer clique assume o controle na hora.
+ * Palco DocStage do hero: a MESMA gravação vira um DOCUMENTO DIFERENTE
+ * por contexto. O gravador no topo é constante de propósito (o input não
+ * muda); a folha embaixo é o protagonista, e cada uma nasce com um verbo
+ * de animação exclusivo: carimbar, marcar, virar, ampliar, enviar,
+ * encher barras, desenhar a espinha, convergir e selar.
  */
 
-interface Scene {
-  speaker: string
-  /** a fala em partes; k = trecho que a IA captura (pode haver vários) */
-  parts: Array<{ t: string; k?: boolean }>
-  artifacts: string[]
-  note: string
-}
-
-interface Context {
-  id: string
-  label: string
-  mode: 'Clínico' | 'Geral'
-  scene: Scene
-}
-
-const CONTEXTS: Context[] = [
-  {
-    id: 'consulta',
-    label: 'Consulta',
-    mode: 'Clínico',
-    scene: {
-      speaker: 'Paciente',
-      parts: [
-        { t: 'Esse mês ' },
-        { t: 'cheguei aos 82 quilos', k: true },
-        { t: ', mas ' },
-        { t: 'ando pulando o café da manhã', k: true },
-        { t: '.' },
-      ],
-      artifacts: ['Antropometria: peso atual 82 kg', 'Anamnese: omissão do desjejum'],
-      note: 'a fala vira dado clínico estruturado',
-    },
-  },
-  {
-    id: 'reuniao',
-    label: 'Reunião',
-    mode: 'Geral',
-    scene: {
-      speaker: 'Você',
-      parts: [
-        { t: 'Então ficou combinado: ' },
-        { t: 'proposta revisada até sexta', k: true },
-        { t: ' e ' },
-        { t: 'o Léo fecha com o fornecedor', k: true },
-        { t: '.' },
-      ],
-      artifacts: ['Ata da reunião', 'Tarefa: proposta · sexta', 'Tarefa: fornecedor · Léo'],
-      note: 'ata e tarefas geradas na hora',
-    },
-  },
-  {
-    id: 'aula',
-    label: 'Aula',
-    mode: 'Geral',
-    scene: {
-      speaker: 'Professora',
-      parts: [
-        { t: 'Guardem isso: ' },
-        { t: 'a fotossíntese transforma luz em energia química', k: true },
-        { t: ', e ' },
-        { t: 'isso cai na prova', k: true },
-        { t: '.' },
-      ],
-      artifacts: ['Resumo da aula', 'Ponto de prova: fotossíntese'],
-      note: 'a aula vira material de estudo',
-    },
-  },
-  {
-    id: 'palestra',
-    label: 'Palestra',
-    mode: 'Geral',
-    scene: {
-      speaker: 'Palestrante',
-      parts: [
-        { t: 'Nossos dados mostram: ' },
-        { t: '70% dos clientes decidem', k: true },
-        { t: ' nos ' },
-        { t: 'primeiros 8 segundos', k: true },
-        { t: ' da experiência.' },
-      ],
-      artifacts: ['Principais insights', 'Citação: 8 segundos'],
-      note: 'a palestra vira notas prontas',
-    },
-  },
-  {
-    id: 'apresentacao',
-    label: 'Apresentação',
-    mode: 'Geral',
-    scene: {
-      speaker: 'Você',
-      parts: [
-        { t: 'Nossa proposta ' },
-        { t: 'reduz o custo em 18%', k: true },
-        { t: ' já no ' },
-        { t: 'primeiro trimestre', k: true },
-        { t: '.' },
-      ],
-      artifacts: ['Resumo executivo', 'Follow-up: enviar números'],
-      note: 'o pitch vira follow-up',
-    },
-  },
-  {
-    id: 'entrevista',
-    label: 'Entrevista',
-    mode: 'Geral',
-    scene: {
-      speaker: 'Candidata',
-      parts: [
-        { t: 'Eu ' },
-        { t: 'liderei a migração do sistema', k: true },
-        { t: ' com um ' },
-        { t: 'time de seis pessoas', k: true },
-        { t: '.' },
-      ],
-      artifacts: ['Ficha da candidata', 'Destaque: liderança em migração'],
-      note: 'a entrevista vira avaliação comparável',
-    },
-  },
-  {
-    id: 'treinamento',
-    label: 'Treinamento',
-    mode: 'Geral',
-    scene: {
-      speaker: 'Instrutor',
-      parts: [
-        { t: 'Primeiro a gente ' },
-        { t: 'valida o pedido', k: true },
-        { t: ', só depois ' },
-        { t: 'libera o estoque', k: true },
-        { t: '.' },
-      ],
-      artifacts: ['Passo a passo do processo', 'Checklist de onboarding'],
-      note: 'o treinamento vira manual',
-    },
-  },
-  {
-    id: 'conversa',
-    label: 'Conversa importante',
-    mode: 'Geral',
-    scene: {
-      speaker: 'Você',
-      parts: [
-        { t: 'Então combinado: ' },
-        { t: 'eu cuido da documentação', k: true },
-        { t: ' e você ' },
-        { t: 'fala com o contador até terça', k: true },
-        { t: '.' },
-      ],
-      artifacts: ['Acordos registrados', 'Lembrete: contador · terça'],
-      note: 'o combinado não se perde',
-    },
-  },
-]
-
-/* Waveform viva: alturas determinísticas por índice */
-const WAVE_BARS = Array.from({ length: 30 }, (_, i) => ({
-  h: 7 + ((i * 7919) % 20),
-  delay: ((i * 137) % 900) / 1000,
-  dur: 0.9 + ((i * 61) % 50) / 100,
-}))
-
-/* Fônons: partículas de som que desprendem da waveform enquanto a fala digita */
-const PHONONS = Array.from({ length: 5 }, (_, i) => ({
-  left: `${20 + i * 15}%`,
-  delay: (i * 137) % 900,
-}))
-
-function Waveform({ dim }: { dim: boolean }) {
-  return (
-    <div
-      aria-hidden="true"
-      className={`flex h-8 items-center justify-center gap-[3px] transition-opacity duration-500 ${
-        dim ? 'opacity-25' : 'opacity-100'
-      }`}
-    >
-      {WAVE_BARS.map((b, i) => (
-        <span
-          key={i}
-          className="wv w-[3px] rounded-pill bg-brand/60"
-          style={{
-            height: b.h,
-            animationDelay: `${b.delay}s`,
-            animationDuration: `${b.dur}s`,
-          }}
-        />
-      ))}
-    </div>
-  )
-}
-
-function SceneView({ scene, reduced }: { scene: Scene; reduced: boolean }) {
-  const [phase, setPhase] = useState<'typing' | 'insight' | 'artifacts'>(
-    reduced ? 'artifacts' : 'typing',
-  )
-
-  const words = (() => {
-    const raw = scene.parts.flatMap((part) =>
-      part.t
-        .split(' ')
-        .filter(Boolean)
-        .map((w) => ({ w, k: !!part.k })),
-    )
-    // pontuação órfã (", " no início de uma parte) cola na palavra anterior
-    const merged: typeof raw = []
-    for (const t of raw) {
-      const prev = merged[merged.length - 1]
-      if (prev && /^[,.;:!?]+$/.test(t.w)) prev.w += t.w
-      else merged.push({ ...t })
-    }
-    return merged
-  })()
-
-  const typeDone = words.length * WORD_MS + 350
-
-  useEffect(() => {
-    if (reduced) return
-    const t1 = window.setTimeout(() => setPhase('insight'), typeDone)
-    const t2 = window.setTimeout(() => setPhase('artifacts'), typeDone + 700)
-    return () => {
-      clearTimeout(t1)
-      clearTimeout(t2)
-    }
-  }, [typeDone, reduced])
-
-  const artifactsOn = phase === 'artifacts'
-
-  return (
-    <div className="flex min-h-[276px] flex-col sm:min-h-[228px]">
-      <div className="flex items-center justify-between">
-        <span className="rounded-pill bg-ink-100/80 px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-ink-400">
-          {scene.speaker}
-        </span>
-        <span className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-ink-400">
-          <span className="relative flex h-2 w-2">
-            <span className="rec-dot h-2 w-2 rounded-full bg-rec" />
-            {/* anel que escapa a cada troca de contexto */}
-            {!reduced && (
-              <motion.span
-                aria-hidden="true"
-                className="absolute inset-0 rounded-full border border-rec/60"
-                initial={{ scale: 1, opacity: 0.5 }}
-                animate={{ scale: 2.4, opacity: 0 }}
-                transition={{ duration: 0.9, ease: 'easeOut' }}
-              />
-            )}
-          </span>
-          rec
-        </span>
-      </div>
-
-      {/* a fala */}
-      <p className="mt-4 flex-1 font-display text-[17px] font-light leading-snug tracking-tight text-ink-900 sm:text-[19px]">
-        <span className="text-ink-200">“</span>
-        {words.map((t, i) => (
-          <motion.span
-            key={i}
-            className="inline"
-            initial={{ opacity: reduced ? 1 : 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.16, delay: reduced ? 0 : 0.3 + (i * WORD_MS) / 1000 }}
-          >
-            {t.k ? (
-              <span className="relative inline whitespace-pre-wrap">
-                <motion.span
-                  className="absolute inset-x-[-2px] inset-y-[1px] -z-0 rounded-[4px] bg-brand/15"
-                  style={{ originX: 0 }}
-                  initial={{ scaleX: reduced ? 1 : 0 }}
-                  animate={{ scaleX: phase === 'typing' ? 0 : 1 }}
-                  transition={{ duration: 0.55, ease: EASE }}
-                />
-                <span
-                  className={`relative transition-colors duration-500 ${
-                    phase === 'typing' ? '' : 'font-semibold text-brand-600'
-                  }`}
-                >
-                  {t.w}
-                </span>
-              </span>
-            ) : (
-              t.w
-            )}{' '}
-          </motion.span>
-        ))}
-        <span className="text-ink-200">”</span>
-        {phase === 'typing' && (
-          <span className="caret ml-0.5 inline-block h-[15px] w-[2px] translate-y-[2px] rounded-pill bg-brand" />
-        )}
-      </p>
-
-      {/* waveform + fônons subindo enquanto o som vira texto */}
-      <div className="relative">
-        <Waveform dim={artifactsOn} />
-        {!reduced &&
-          !artifactsOn &&
-          PHONONS.map((p, i) => (
-            <span
-              key={i}
-              aria-hidden="true"
-              className="phonon"
-              style={{ left: p.left, '--delay': `${p.delay}ms` } as CSSProperties}
-            />
-          ))}
-      </div>
-
-      {/* artefatos: bolhas que brotam da waveform com micro-rotação */}
-      <div className="mt-2.5 flex min-h-[104px] flex-wrap items-start justify-center gap-2 sm:min-h-[40px]">
-        {artifactsOn &&
-          scene.artifacts.map((a, i) => (
-            <motion.span
-              key={a}
-              className="flex items-center gap-1.5 rounded-pill bg-ok/10 px-3 py-1.5 text-[11.5px] font-semibold text-[#0B7A55]"
-              initial={{
-                opacity: 0,
-                y: 26,
-                scale: 0.85,
-                rotate: i % 2 ? 2.5 : -2.5,
-              }}
-              animate={{ opacity: 1, y: 0, scale: 1, rotate: 0 }}
-              transition={{
-                delay: reduced ? 0 : i * 0.12,
-                type: 'spring',
-                stiffness: 300,
-                damping: 17,
-              }}
-            >
-              <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M4 12.5 9.5 18 20 6" />
-              </svg>
-              {a}
-            </motion.span>
-          ))}
-      </div>
-      <motion.p
-        className="mt-1.5 text-center font-mono text-[9.5px] uppercase tracking-[0.16em] text-ink-400"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: artifactsOn ? 1 : 0 }}
-        transition={{ duration: 0.4, delay: reduced ? 0 : 0.4 }}
-      >
-        {scene.note}
-      </motion.p>
-    </div>
-  )
-}
-
-/** Trilho de chips: o índice sempre visível dos contextos do palco. */
+/** Trilho de chips: vitrine das 8 saídas diferentes, com ícone por documento. */
 function ContextRail({
   active,
   onSelect,
   running,
   showProgress,
   cycleKey,
+  duration,
 }: {
   active: number
   onSelect: (i: number) => void
   running: boolean
   showProgress: boolean
   cycleKey: string
+  duration: number
 }) {
   const railRef = useRef<HTMLDivElement>(null)
   const chipRefs = useRef<Array<HTMLButtonElement | null>>([])
@@ -408,6 +69,12 @@ function ContextRail({
     lastUserRef.current = Date.now()
   }
 
+  const pick = (i: number) => {
+    onSelect(i)
+    center(i)
+    chipRefs.current[i]?.focus({ preventScroll: true })
+  }
+
   return (
     <motion.div
       ref={railRef}
@@ -415,6 +82,21 @@ function ContextRail({
       aria-label="Contextos de gravação"
       onPointerDown={markUser}
       onWheel={markUser}
+      onKeyDown={(e) => {
+        if (e.key === 'ArrowRight') {
+          e.preventDefault()
+          pick((active + 1) % CONTEXTS.length)
+        } else if (e.key === 'ArrowLeft') {
+          e.preventDefault()
+          pick((active - 1 + CONTEXTS.length) % CONTEXTS.length)
+        } else if (e.key === 'Home') {
+          e.preventDefault()
+          pick(0)
+        } else if (e.key === 'End') {
+          e.preventDefault()
+          pick(CONTEXTS.length - 1)
+        }
+      }}
       className="no-scrollbar relative -mx-5 flex snap-x items-center gap-1.5 overflow-x-auto px-5 pb-1 [mask-image:linear-gradient(90deg,transparent,black_20px,black_calc(100%-20px),transparent)] md:mx-0 md:flex-wrap md:justify-center md:overflow-x-visible md:px-0 md:[mask-image:none]"
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
@@ -433,11 +115,9 @@ function ContextRail({
             id={`chip-${c.id}`}
             aria-selected={isActive}
             aria-controls="hero-stage"
-            onClick={() => {
-              onSelect(i)
-              center(i)
-            }}
-            className={`relative shrink-0 snap-center rounded-pill px-3.5 py-2 font-mono text-[11px] uppercase tracking-[0.08em] transition-colors duration-300 ${
+            tabIndex={isActive ? 0 : -1}
+            onClick={() => pick(i)}
+            className={`relative flex shrink-0 snap-center items-center gap-1.5 rounded-pill px-3.5 py-2 font-mono text-[11px] uppercase tracking-[0.08em] transition-colors duration-300 ${
               isActive ? 'text-white' : 'glass-flat text-ink-400 hover:text-ink-900'
             }`}
           >
@@ -454,13 +134,16 @@ function ContextRail({
                   key={cycleKey}
                   className="chip-progress block h-full rounded-pill bg-white/80"
                   style={{
-                    animationDuration: `${SCENE_MS}ms`,
+                    animationDuration: `${duration}ms`,
                     animationPlayState: running ? 'running' : 'paused',
                   }}
                 />
               </span>
             )}
-            <span className="relative z-[2]">{c.label}</span>
+            <span className="relative z-[2] flex items-center gap-1.5">
+              {c.icon}
+              {c.label}
+            </span>
           </button>
         )
       })}
@@ -499,20 +182,26 @@ export function Hero() {
   const stageY = useTransform(exitProgress, [0, 1], [0, -40])
   const brainY = useTransform(exitProgress, [0, 1], [0, 28])
 
-  const running = !reduced && inView && !manual && !hovered && !dragging
+  // dois sinais: a cena escolhida toca na hora (playing); o clique só
+  // suspende o AVANÇO automático por 14s (running)
+  const playing = !reduced && inView && !hovered && !dragging
+  const running = playing && !manual
+  const ctx = CONTEXTS[active]
+  const sceneKey = `${ctx.id}-${stamp}`
+  const phase = useSceneClock(ctx.milestones, playing, sceneKey, reduced)
 
   // nova cena zera o tempo já decorrido
   useEffect(() => {
     elapsedRef.current = 0
   }, [active, stamp])
 
-  // relógio único do autoplay
+  // relógio único do autoplay (a duração é da cena)
   useEffect(() => {
     if (!running) return
     startedRef.current = Date.now()
     const id = window.setTimeout(
       () => setActive((a) => (a + 1) % CONTEXTS.length),
-      Math.max(400, SCENE_MS - elapsedRef.current),
+      Math.max(400, CONTEXTS[active].dur - elapsedRef.current),
     )
     return () => {
       clearTimeout(id)
@@ -535,7 +224,7 @@ export function Hero() {
   const step = (dir: 1 | -1) =>
     select((active + dir + CONTEXTS.length) % CONTEXTS.length)
 
-  const ctx = CONTEXTS[active]
+  const Body = ctx.Body
 
   return (
     <section ref={sectionRef} className="relative overflow-hidden pt-24 sm:pt-28">
@@ -573,7 +262,7 @@ export function Hero() {
           identifica quem falou e devolve o documento que aquele momento pede.
         </motion.p>
 
-        {/* palco vivo: um palco, muitos contextos */}
+        {/* palco DocStage: um gravador, oito documentos */}
         <div className="mt-9 w-full">
           <ContextRail
             active={active}
@@ -581,6 +270,7 @@ export function Hero() {
             running={running}
             showProgress={!reduced}
             cycleKey={`${active}-${stamp}`}
+            duration={ctx.dur}
           />
           <motion.div style={lite ? undefined : { y: stageY }}>
             <motion.div
@@ -588,7 +278,7 @@ export function Hero() {
               id="hero-stage"
               role="tabpanel"
               aria-labelledby={`chip-${ctx.id}`}
-              className="glass-strong glass-top-light mx-auto mt-4 w-full max-w-2xl rounded-[26px] p-5 text-left shadow-card sm:p-6"
+              className="glass-strong glass-top-light mx-auto mt-4 w-full max-w-2xl rounded-[26px] p-4 text-left shadow-card sm:p-6"
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.4, ease: EASE }}
@@ -615,37 +305,61 @@ export function Hero() {
             >
               {/* o miolo inclina dentro do vidro parado */}
               <motion.div
+                className="relative"
                 style={{
                   rotateX: tilt.rotateX,
                   rotateY: tilt.rotateY,
                   transformPerspective: 900,
                 }}
               >
-                <div className="mb-4 flex justify-center border-b border-ink-100 pb-3">
-                  <AnimatePresence mode="wait">
-                    <motion.p
-                      key={ctx.id}
-                      className="eyebrow-brand"
-                      initial={{ opacity: 0, y: 6 }}
+                <RecorderChrome
+                  running={playing}
+                  sceneId={sceneKey}
+                  reduced={reduced}
+                />
+
+                {/* a fonte: a fala, igual em toda cena de propósito */}
+                <div className="min-h-[52px] sm:min-h-[36px]">
+                  <AnimatePresence mode="wait" initial={false}>
+                    <motion.div
+                      key={sceneKey}
+                      initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -6 }}
-                      transition={{ duration: 0.3, ease: EASE }}
+                      transition={{ duration: 0.22, ease: EASE }}
                     >
-                      {ctx.label} · Modo {ctx.mode}
-                    </motion.p>
+                      <Sentence
+                        speaker={ctx.speaker}
+                        parts={ctx.parts}
+                        phase={phase}
+                        reduced={reduced}
+                      />
+                    </motion.div>
                   </AnimatePresence>
                 </div>
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={ctx.id}
-                    initial={{ opacity: 0, y: 14 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -14 }}
-                    transition={{ duration: 0.4, ease: EASE }}
-                  >
-                    <SceneView scene={ctx.scene} reduced={reduced} />
-                  </motion.div>
-                </AnimatePresence>
+                <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.16em] text-ink-400">
+                  você só grava · o Transcript escreve
+                </p>
+
+                {/* o protagonista: a folha que nasce diferente por contexto */}
+                <div className="relative mt-6">
+                  <SheetStack
+                    next={CONTEXTS[(active + 1) % CONTEXTS.length]}
+                    nextNext={CONTEXTS[(active + 2) % CONTEXTS.length]}
+                  />
+                  <AnimatePresence mode="wait" initial={false}>
+                    <DocSheet key={sceneKey} ctx={ctx}>
+                      <Body phase={phase} lite={lite} />
+                    </DocSheet>
+                  </AnimatePresence>
+                </div>
+                <motion.p
+                  className="mt-2 min-h-[18px] text-center font-mono text-[9.5px] uppercase tracking-[0.16em] text-ink-400"
+                  animate={{ opacity: phase >= 3 ? 1 : 0 }}
+                  transition={{ duration: 0.4 }}
+                >
+                  {ctx.note}
+                </motion.p>
               </motion.div>
             </motion.div>
           </motion.div>
