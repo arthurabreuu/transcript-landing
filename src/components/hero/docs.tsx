@@ -165,17 +165,18 @@ export function DocProntuario({ phase, lite }: DocBodyProps) {
           lite={lite}
         />
       </div>
-      {/* a IA interpreta, não só transcreve */}
+      {/* o relato entra organizado na anamnese */}
       <motion.div
-        className="mt-3 inline-flex items-center gap-1.5 rounded-pill bg-warn/10 px-2.5 py-1 text-[10.5px] font-semibold text-[#B45309]"
+        className="mt-3 inline-flex items-center gap-1.5 rounded-pill bg-brand/10 px-2.5 py-1 text-[10.5px] font-semibold text-brand-700"
         initial={{ opacity: 0, y: 10 }}
         animate={phase >= 4 ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
         transition={RISE}
       >
-        <svg className="h-2.5 w-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-          <path d="M12 8v5M12 16.5v.5M10.3 3.9 2.6 17.1a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z" />
+        <svg className="h-2.5 w-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="5" y="4" width="14" height="17" rx="2" />
+          <path d="M9 10h6M9 14h6" />
         </svg>
-        Atenção: desjejum omitido
+        Anamnese: omissão do desjejum
       </motion.div>
       {/* o único thunk físico da demo */}
       <motion.div
@@ -216,26 +217,25 @@ export function DocAta({ phase, lite }: DocBodyProps) {
       </p>
       <div className="mt-2.5 space-y-2">
         {TASKS.map((t, i) => {
-          const checked = phase >= 4 + i
+          // a linha entra na ata organizada: o checkbox fica VAZIO de
+          // propósito (a lista é sua, o Transcript só organiza)
+          const filed = phase >= 4 + i
           return (
             <motion.div
               key={t.text}
-              className="flex items-center gap-2.5 rounded-lg border border-ink-100 bg-white px-3 py-2"
+              className="relative flex items-center gap-2.5 overflow-hidden rounded-lg border border-ink-100 bg-white px-3 py-2"
               initial={{ opacity: 0, x: -16 }}
               animate={phase >= 2 ? { opacity: 1, x: 0 } : { opacity: 0, x: -16 }}
               transition={{ ...RISE, delay: lite ? 0 : i * 0.12 }}
             >
-              <span className="relative grid h-4 w-4 shrink-0 place-items-center rounded-[5px] border-[1.5px] border-ink-200">
-                <motion.span
-                  className="absolute inset-0 rounded-[3px] bg-brand"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: checked ? 1 : 0 }}
-                  transition={SNAP}
-                />
-                <svg className="relative h-3 w-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
-                  <DrawPath d="M4 12.5 9.5 18 20 6" whenInView={false} play={checked} duration={0.3} delay={0.1} />
-                </svg>
-              </span>
+              <motion.span
+                className="absolute inset-y-0 left-0 w-[3px] bg-brand"
+                style={{ originY: 0 }}
+                initial={{ scaleY: 0 }}
+                animate={{ scaleY: filed ? 1 : 0 }}
+                transition={{ duration: 0.3 }}
+              />
+              <span className="h-4 w-4 shrink-0 rounded-[5px] border-[1.5px] border-ink-200" />
               <span className="min-w-0 flex-1 truncate text-[12px] font-medium text-ink-700">
                 {t.text}
               </span>
@@ -263,7 +263,7 @@ export function DocAta({ phase, lite }: DocBodyProps) {
         animate={{ opacity: phase >= 5 ? 1 : 0 }}
         transition={{ duration: 0.4 }}
       >
-        ata + 2 tarefas criadas
+        ata pronta · 2 tarefas para revisar
       </motion.p>
     </div>
   )
@@ -272,24 +272,26 @@ export function DocAta({ phase, lite }: DocBodyProps) {
 /* ---------- 3. Aula · Resumo com flashcard (verbo: VIRAR 3D) ---------- */
 
 export function DocResumo({ phase, lite }: DocBodyProps) {
+  // o giro encena a transformação real: o trecho falado vira nota organizada
   const flipped = phase >= 4
   const front = (
     <>
-      <span className="font-mono text-[8px] uppercase tracking-[0.16em] text-brand-600">
-        pergunta
+      <span className="font-mono text-[8px] uppercase tracking-[0.16em] text-ink-400">
+        trecho da aula
       </span>
-      <span className="mt-1 text-[12.5px] font-semibold text-ink-900">
-        O que a fotossíntese transforma?
+      <span className="mt-1 text-[11.5px] font-light leading-snug text-ink-700">
+        “a fotossíntese transforma luz em energia química, e isso cai na prova”
       </span>
     </>
   )
   const back = (
     <>
-      <span className="font-mono text-[8px] uppercase tracking-[0.16em] text-ink-400">
-        resposta
+      <span className="font-mono text-[8px] uppercase tracking-[0.16em] text-brand-600">
+        organizado
       </span>
-      <span className="mt-1 text-[12.5px] font-semibold text-brand-600">
-        Luz em energia química
+      <span className="mt-1 text-[12.5px] font-semibold text-ink-900">
+        Fotossíntese: luz vira{' '}
+        <span className="text-brand-600">energia química</span>
       </span>
     </>
   )
@@ -319,14 +321,14 @@ export function DocResumo({ phase, lite }: DocBodyProps) {
             /* no toque, o giro 3D vira crossfade */
             <>
               <motion.div
-                className="absolute inset-0 grid place-items-center rounded-xl border border-brand/20 bg-brand-50 px-4 text-center"
+                className="absolute inset-0 grid place-items-center rounded-xl border border-ink-100 bg-white px-4 text-center"
                 animate={{ opacity: flipped ? 0 : 1 }}
                 transition={{ duration: 0.35 }}
               >
                 <span className="flex flex-col items-center">{front}</span>
               </motion.div>
               <motion.div
-                className="absolute inset-0 grid place-items-center rounded-xl border border-ink-100 bg-white px-4 text-center"
+                className="absolute inset-0 grid place-items-center rounded-xl border border-brand/20 bg-brand-50 px-4 text-center"
                 animate={{ opacity: flipped ? 1 : 0 }}
                 transition={{ duration: 0.35 }}
               >
@@ -340,10 +342,10 @@ export function DocResumo({ phase, lite }: DocBodyProps) {
               animate={{ rotateY: flipped ? 180 : 0 }}
               transition={{ type: 'spring', stiffness: 180, damping: 22 }}
             >
-              <div className="backface-hidden absolute inset-0 grid place-items-center rounded-xl border border-brand/20 bg-brand-50 px-4 text-center">
+              <div className="backface-hidden absolute inset-0 grid place-items-center rounded-xl border border-ink-100 bg-white px-4 text-center">
                 <span className="flex flex-col items-center">{front}</span>
               </div>
-              <div className="backface-hidden absolute inset-0 grid place-items-center rounded-xl border border-ink-100 bg-white px-4 text-center [transform:rotateY(180deg)]">
+              <div className="backface-hidden absolute inset-0 grid place-items-center rounded-xl border border-brand/20 bg-brand-50 px-4 text-center [transform:rotateY(180deg)]">
                 <span className="flex flex-col items-center">{back}</span>
               </div>
             </motion.div>
@@ -436,21 +438,12 @@ const EMAIL_BODY = [
   { w: 'trimestre.', k: true },
 ]
 
-export function DocEmail({ phase, lite }: DocBodyProps) {
-  const sent = phase >= 5
+export function DocEmail({ phase }: DocBodyProps) {
   return (
     <div className="relative">
-      {/* aqui é o documento que digita; no fim, ele solta e esmaece
-          (nunca some: o estado final segue legível, inclusive em reduced) */}
-      <motion.div
-        className="overflow-hidden rounded-xl border border-ink-100 bg-white"
-        animate={{
-          y: sent ? -6 : 0,
-          opacity: sent ? 0.35 : 1,
-          scale: sent ? 0.98 : 1,
-        }}
-        transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-      >
+      {/* aqui é o documento que se redige sozinho; o envio é SEU:
+          o fecho entrega um rascunho pronto, não um e-mail disparado */}
+      <div className="overflow-hidden rounded-xl border border-ink-100 bg-white">
         <div className="flex gap-1.5 border-b border-ink-50 px-3 py-2">
           <span className="h-2 w-2 rounded-full bg-ink-100" />
           <span className="h-2 w-2 rounded-full bg-ink-100" />
@@ -477,95 +470,73 @@ export function DocEmail({ phase, lite }: DocBodyProps) {
           <TypedLine words={EMAIL_BODY} on={phase >= 4} speed={0.035} />
         </div>
         <div className="flex justify-end px-3 pb-2.5">
-          <motion.span
-            className="inline-flex items-center gap-1 rounded-pill bg-brand px-3.5 py-1.5 text-[11px] font-semibold text-white"
-            animate={sent ? { scale: [1, 0.96, 1] } : { scale: 1 }}
-            transition={{ duration: 0.3 }}
+          <Pop
+            on={phase >= 5}
+            className="inline-flex items-center gap-1.5 rounded-pill bg-ok/10 px-3 py-1.5 text-[11px] font-semibold text-[#0B7A55]"
           >
-            Enviar
-            <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M5 12h14M13 6l6 6-6 6" />
-            </svg>
-          </motion.span>
-        </div>
-      </motion.div>
-      {sent && (
-        <motion.div
-          className="absolute inset-0 grid place-items-center"
-          initial={{ opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ ...RISE, delay: lite ? 0 : 0.25 }}
-        >
-          <span className="inline-flex items-center gap-1.5 rounded-pill bg-ok/10 px-3.5 py-2 text-[12px] font-semibold text-[#0B7A55]">
-            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+            <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
               <path d="M4 12.5 9.5 18 20 6" />
             </svg>
-            Enviado
-          </span>
-        </motion.div>
-      )}
+            Rascunho pronto · revise e envie
+          </Pop>
+        </div>
+      </div>
     </div>
   )
 }
 
 /* ---------- 6. Entrevista · Ficha (verbo: ENCHER BARRAS) ---------- */
 
-const CRITERIA = [
-  { label: 'Liderança', target: 0.9, score: 4.5 },
-  { label: 'Técnica', target: 0.8, score: 4.0 },
-  { label: 'Comunicação', target: 0.7, score: 3.5 },
+const TOPICS = [
+  { label: 'Liderança', quote: 'liderei a migração do sistema' },
+  { label: 'Equipe', quote: 'com um time de seis pessoas' },
 ]
 
 export function DocFicha({ phase, lite }: DocBodyProps) {
   return (
     <div>
-      <Pop
-        on={phase >= 2}
-        className="inline-block rounded-lg border border-brand/20 bg-brand-50 px-2.5 py-1.5 text-[11px] text-ink-700"
-      >
-        “liderou a migração com um time de seis”
-      </Pop>
-      <div className="mt-3 space-y-2.5">
-        {CRITERIA.map((c, i) => (
-          <div key={c.label} className="flex items-center gap-2.5">
-            <span className="w-[88px] shrink-0 text-[11px] font-medium text-ink-700">
-              {c.label}
-            </span>
-            <span className="h-2 flex-1 overflow-hidden rounded-pill bg-ink-100">
-              <motion.span
-                className="block h-full rounded-pill bg-brand"
-                style={{ originX: 0 }}
-                initial={{ scaleX: 0 }}
-                animate={{ scaleX: phase >= 3 ? c.target : 0 }}
-                transition={{ ...RISE, delay: lite ? 0 : i * 0.12 }}
-              />
-            </span>
-            <span className="w-7 shrink-0 text-right font-mono text-[11px] font-semibold text-ink-900">
-              {phase >= 3 ? (
-                <CountUp
-                  to={c.score}
-                  duration={0.8}
-                  delay={lite ? 0 : i * 0.12}
-                  format={(v) => v.toFixed(1)}
-                />
-              ) : (
-                '0.0'
-              )}
-            </span>
+      <div className="flex items-center gap-2">
+        <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-100 font-mono text-[10px] font-bold text-brand-700">
+          A
+        </span>
+        <span className="text-[11.5px] font-medium text-ink-700">
+          Ana · cada resposta no lugar certo
+        </span>
+      </div>
+      <div className="mt-3 space-y-2">
+        {TOPICS.map((t, i) => (
+          <div key={t.label} className="flex items-center gap-2.5">
+            {/* a etiqueta CARIMBA o tema no trecho: organizar é classificar */}
+            <motion.span
+              className="w-[86px] shrink-0 rounded-pill bg-brand-100 px-2 py-1 text-center font-mono text-[9px] uppercase tracking-[0.08em] text-brand-700"
+              initial={{ opacity: 0, scale: 1.35, rotate: -6 }}
+              animate={
+                phase >= 3 + i
+                  ? { opacity: 1, scale: 1, rotate: 0 }
+                  : { opacity: 0, scale: 1.35, rotate: -6 }
+              }
+              transition={SNAP}
+            >
+              {t.label}
+            </motion.span>
+            <MaskLine
+              on={phase >= 2}
+              delay={lite ? 0 : i * 0.12}
+              className="flex-1 rounded-lg border border-ink-100 bg-white px-3 py-2 text-[11.5px] text-ink-700"
+            >
+              “{t.quote}”
+            </MaskLine>
           </div>
         ))}
       </div>
-      <motion.div
-        className="mt-3 inline-flex items-center gap-1.5 rounded-pill bg-ok/10 px-2.5 py-1 text-[11px] font-semibold text-[#0B7A55]"
-        initial={{ opacity: 0, x: 12 }}
-        animate={phase >= 5 ? { opacity: 1, x: 0 } : { opacity: 0, x: 12 }}
-        transition={RISE}
+      <motion.p
+        className="mt-3 font-mono text-[9.5px] text-ink-400"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: phase >= 5 ? 1 : 0 }}
+        transition={{ duration: 0.4 }}
       >
-        <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M4 12.5 9.5 18 20 6" />
-        </svg>
-        Avançar para a próxima fase
-      </motion.div>
+        destaques por tema · fácil de comparar depois
+      </motion.p>
     </div>
   )
 }
@@ -575,7 +546,7 @@ export function DocFicha({ phase, lite }: DocBodyProps) {
 const STEPS = [
   { title: 'Validar o pedido', sub: 'conferir dados e pagamento' },
   { title: 'Liberar o estoque', sub: 'só depois da validação' },
-  { title: 'Confirmar com o cliente', sub: 'mensagem automática', ia: true },
+  { title: 'Confirmar com o cliente', sub: 'fecha o atendimento' },
 ]
 
 export function DocManual({ phase, lite }: DocBodyProps) {
@@ -615,18 +586,7 @@ export function DocManual({ phase, lite }: DocBodyProps) {
               {s.title}
             </MaskLine>
             <MaskLine on={on} delay={i === 0 ? d(0.18) : d(0.63)} className="text-[10.5px] text-ink-400">
-              <span className="inline-flex items-center gap-1.5">
-                {s.sub}
-                {s.ia && (
-                  <Pop
-                    on={phase >= 4}
-                    delay={d(0.8)}
-                    className="rounded-pill bg-brand-100 px-1.5 py-0.5 font-mono text-[8.5px] font-bold uppercase tracking-[0.08em] text-brand-700"
-                  >
-                    sugerido pela IA
-                  </Pop>
-                )}
-              </span>
+              {s.sub}
             </MaskLine>
           </div>
         )
