@@ -82,11 +82,12 @@ canvas {
     background: rgba(255, 255, 255, 0.82);
     border: 1px solid rgba(255, 255, 255, 0.9);
   }
+  /* transição restrita a borda/sombra: transform pertence ao framer */
   .hover-card {
-    @apply transition duration-200 hover:border-brand/40 hover:shadow-card-hover;
+    @apply transition-[border-color,box-shadow] duration-200 hover:border-brand/40 hover:shadow-card-hover;
   }
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-pill px-6 py-3 text-sm font-semibold transition-all duration-150;
+    @apply relative inline-flex items-center justify-center gap-2 rounded-pill px-6 py-3 text-sm font-semibold transition-[background-color,border-color,color,box-shadow] duration-150;
   }
   .btn-brand {
     @apply btn bg-brand text-white shadow-glow hover:bg-brand-600 active:scale-[0.98];
@@ -132,17 +133,26 @@ canvas {
   color: transparent;
 }
 
-@keyframes pulse-glow {
+/* Glow que respira sem paint: box-shadow pré-renderizado num ::before,
+   animando SÓ opacity (compositor puro). */
+@keyframes glow-breathe {
   0%,
   100% {
-    box-shadow: 0 0 20px rgba(0, 111, 245, 0.35), 0 0 44px rgba(0, 111, 245, 0.14);
+    opacity: 0.55;
   }
   50% {
-    box-shadow: 0 0 30px rgba(0, 111, 245, 0.55), 0 0 64px rgba(0, 111, 245, 0.24);
+    opacity: 1;
   }
 }
-.cta-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
+.cta-glow::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: 999px;
+  box-shadow: 0 0 30px rgba(0, 111, 245, 0.5), 0 0 64px rgba(0, 111, 245, 0.22);
+  animation: glow-breathe 2.4s ease-in-out infinite;
+  pointer-events: none;
 }
 
 @keyframes enterUp {
@@ -194,16 +204,142 @@ canvas {
   animation: wave-bar 1.15s ease-in-out infinite;
 }
 
-/* Barra de progresso do chip ativo (pausa de verdade via animation-play-state) */
+/* ---------------- Física EMPUXO: loops leves (transform + opacity) ---------------- */
+
+/* LEVITAR: bob idle SÓ para habitantes sem backdrop-filter (números, ícones,
+   badges, pills glass-flat). Texto corrido tem massa infinita e nunca flutua. */
+@keyframes float-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+.float-bob {
+  display: inline-block;
+  animation: float-bob var(--bob-dur, 5s) ease-in-out var(--bob-delay, 0s) infinite;
+}
+
+/* Deriva das auroras: CSS puro, o main thread dorme */
+@keyframes blob-drift {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(40px, -30px) scale(1.06);
+  }
+}
+.blob {
+  position: absolute;
+  will-change: transform;
+  animation: blob-drift var(--dur, 26s) ease-in-out var(--delay, 0s) infinite;
+}
+
+/* Orbes da aurora subindo do rodapé ao topo */
+@keyframes orb-rise {
+  0% {
+    transform: translateY(108vh) translateX(0);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.5;
+  }
+  88% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateY(-8vh) translateX(var(--drift, 0px));
+    opacity: 0;
+  }
+}
+.orb {
+  position: absolute;
+  top: 0;
+  border-radius: 999px;
+  opacity: 0;
+  animation: orb-rise var(--dur, 26s) linear var(--delay, 0s) infinite;
+}
+
+/* Fagulhas-minuto do TimeMath: os minutos escapando do ano */
+@keyframes minute-rise {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.35;
+  }
+  85% {
+    opacity: 0.35;
+  }
+  100% {
+    transform: translateY(-260px);
+    opacity: 0;
+  }
+}
+.minute {
+  position: absolute;
+  bottom: 0;
+  width: 3px;
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(136, 188, 245, 0.8);
+  opacity: 0;
+  animation: minute-rise var(--dur, 9s) linear var(--delay, 0s) infinite;
+}
+
+/* Fônons do hero: partículas de som desprendendo da waveform */
+@keyframes phonon-rise {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 0;
+  }
+  25% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateY(-34px) scale(0.6);
+    opacity: 0;
+  }
+}
+.phonon {
+  position: absolute;
+  bottom: 6px;
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(0, 111, 245, 0.6);
+  opacity: 0;
+  animation: phonon-rise 1.6s ease-out var(--delay, 0s) infinite;
+}
+
+/* Fora da viewport, todo loop CSS dorme */
+[data-live='false'] .float-bob,
+[data-live='false'] .orb,
+[data-live='false'] .minute,
+[data-live='false'] .phonon,
+[data-live='false'] .wv,
+[data-live='false'] .rec-dot,
+[data-live='false'] .caret,
+[data-live='false'] .cta-glow::before {
+  animation-play-state: paused;
+}
+
+/* Barra de progresso do chip ativo (pausa de verdade via animation-play-state);
+   scaleX em vez de width: compositor puro, zero layout por frame */
 @keyframes chip-progress {
   from {
-    width: 0;
+    transform: scaleX(0);
   }
   to {
-    width: 100%;
+    transform: scaleX(1);
   }
 }
 .chip-progress {
+  transform-origin: left;
   animation-name: chip-progress;
   animation-timing-function: linear;
   animation-fill-mode: both;
@@ -227,12 +363,16 @@ canvas {
   html {
     scroll-behavior: auto;
   }
-  .cta-glow,
+  .cta-glow::before,
   .stagger > *,
   .caret,
   .wv,
   .rec-dot,
-  .chip-progress {
+  .chip-progress,
+  .float-bob,
+  .orb,
+  .minute,
+  .phonon {
     animation: none;
   }
 }

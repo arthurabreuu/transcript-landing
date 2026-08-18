@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import { motion, useScroll, useSpring } from 'framer-motion'
+import { SNAP } from '../motion/tokens'
 
 export function Nav() {
   const [scrolled, setScrolled] = useState(false)
@@ -8,6 +10,14 @@ export function Nav() {
     window.addEventListener('scroll', on, { passive: true })
     return () => window.removeEventListener('scroll', on)
   }, [])
+
+  // fio-altímetro: quanto da página já foi percorrido, com inércia de spring
+  const { scrollYProgress } = useScroll()
+  const scaleX = useSpring(scrollYProgress, {
+    stiffness: 120,
+    damping: 26,
+    restDelta: 0.001,
+  })
 
   return (
     <header
@@ -33,11 +43,27 @@ export function Nav() {
           <a href="#planos" className="hidden text-[13px] font-medium text-ink-400 transition-colors hover:text-ink-900 sm:block">
             Planos
           </a>
-          <a href="#planos" className="btn-brand !px-4 !py-2 text-[13px]">
+          <motion.a
+            href="#planos"
+            className="btn-brand !px-4 !py-2 text-[13px]"
+            whileHover={{ y: -2, scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            transition={SNAP}
+          >
             Testar grátis
-          </a>
+          </motion.a>
         </nav>
       </div>
+      <motion.span
+        aria-hidden="true"
+        className={`absolute inset-x-0 bottom-0 block h-[2px] origin-left transition-opacity duration-300 ${
+          scrolled ? 'opacity-100' : 'opacity-0'
+        }`}
+        style={{
+          scaleX,
+          background: 'linear-gradient(90deg, #006FF5, #88BCF5)',
+        }}
+      />
     </header>
   )
 }

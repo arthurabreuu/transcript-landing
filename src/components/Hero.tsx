@@ -1,7 +1,17 @@
-import { useEffect, useRef, useState } from 'react'
-import { AnimatePresence, motion, useInView, useReducedMotion } from 'framer-motion'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import {
+  AnimatePresence,
+  motion,
+  useInView,
+  useReducedMotion,
+  useScroll,
+  useSpring,
+  useTransform,
+} from 'framer-motion'
+import { EASE, SNAP, SOFT } from '../motion/tokens'
+import { useLite, useMediaQuery, useSectionLive, useTilt } from '../motion/hooks'
+import { MaskRise } from '../motion/primitives'
 
-const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1]
 const SCENE_MS = 7200
 const WORD_MS = 80
 const MANUAL_RESUME_MS = 14000
@@ -167,23 +177,17 @@ const CONTEXTS: Context[] = [
   },
 ]
 
-/** matchMedia reativo: acompanha mudanças da preferência com a aba aberta */
-function useMediaQuery(query: string) {
-  const [matches, setMatches] = useState(() => window.matchMedia(query).matches)
-  useEffect(() => {
-    const mq = window.matchMedia(query)
-    const on = () => setMatches(mq.matches)
-    mq.addEventListener('change', on)
-    return () => mq.removeEventListener('change', on)
-  }, [query])
-  return matches
-}
-
 /* Waveform viva: alturas determinísticas por índice */
 const WAVE_BARS = Array.from({ length: 30 }, (_, i) => ({
   h: 7 + ((i * 7919) % 20),
   delay: ((i * 137) % 900) / 1000,
   dur: 0.9 + ((i * 61) % 50) / 100,
+}))
+
+/* Fônons: partículas de som que desprendem da waveform enquanto a fala digita */
+const PHONONS = Array.from({ length: 5 }, (_, i) => ({
+  left: `${20 + i * 15}%`,
+  delay: (i * 137) % 900,
 }))
 
 function Waveform({ dim }: { dim: boolean }) {
@@ -252,7 +256,19 @@ function SceneView({ scene, reduced }: { scene: Scene; reduced: boolean }) {
           {scene.speaker}
         </span>
         <span className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-ink-400">
-          <span className="rec-dot h-2 w-2 rounded-full bg-rec" />
+          <span className="relative flex h-2 w-2">
+            <span className="rec-dot h-2 w-2 rounded-full bg-rec" />
+            {/* anel que escapa a cada troca de contexto */}
+            {!reduced && (
+              <motion.span
+                aria-hidden="true"
+                className="absolute inset-0 rounded-full border border-rec/60"
+                initial={{ scale: 1, opacity: 0.5 }}
+                animate={{ scale: 2.4, opacity: 0 }}
+                transition={{ duration: 0.9, ease: 'easeOut' }}
+              />
+            )}
+          </span>
           rec
         </span>
       </div>
@@ -296,22 +312,40 @@ function SceneView({ scene, reduced }: { scene: Scene; reduced: boolean }) {
         )}
       </p>
 
-      <Waveform dim={artifactsOn} />
+      {/* waveform + fônons subindo enquanto o som vira texto */}
+      <div className="relative">
+        <Waveform dim={artifactsOn} />
+        {!reduced &&
+          !artifactsOn &&
+          PHONONS.map((p, i) => (
+            <span
+              key={i}
+              aria-hidden="true"
+              className="phonon"
+              style={{ left: p.left, '--delay': `${p.delay}ms` } as CSSProperties}
+            />
+          ))}
+      </div>
 
-      {/* artefatos */}
+      {/* artefatos: bolhas que brotam da waveform com micro-rotação */}
       <div className="mt-2.5 flex min-h-[104px] flex-wrap items-start justify-center gap-2 sm:min-h-[40px]">
         {artifactsOn &&
           scene.artifacts.map((a, i) => (
             <motion.span
               key={a}
               className="flex items-center gap-1.5 rounded-pill bg-ok/10 px-3 py-1.5 text-[11.5px] font-semibold text-[#0B7A55]"
-              initial={{ opacity: 0, y: 12, scale: 0.85 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
+              initial={{
+                opacity: 0,
+                y: 26,
+                scale: 0.85,
+                rotate: i % 2 ? 2.5 : -2.5,
+              }}
+              animate={{ opacity: 1, y: 0, scale: 1, rotate: 0 }}
               transition={{
                 delay: reduced ? 0 : i * 0.12,
                 type: 'spring',
-                stiffness: 320,
-                damping: 20,
+                stiffness: 300,
+                damping: 17,
               }}
             >
               <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
@@ -411,7 +445,7 @@ function ContextRail({
               <motion.span
                 layoutId="context-chip"
                 className="absolute inset-0 rounded-pill bg-brand shadow-glow"
-                transition={{ type: 'spring', stiffness: 420, damping: 34 }}
+                transition={SNAP}
               />
             )}
             {isActive && showProgress && (
@@ -437,6 +471,7 @@ function ContextRail({
 export function Hero() {
   const reduced = useReducedMotion() ?? false
   const coarse = useMediaQuery('(pointer: coarse)')
+  const lite = useLite()
 
   const [active, setActive] = useState(0)
   const [manual, setManual] = useState(false)
@@ -444,11 +479,25 @@ export function Hero() {
   const [dragging, setDragging] = useState(false)
   // cada interação bumpa o stamp para reiniciar os relógios do zero
   const [stamp, setStamp] = useState(0)
+  const sectionRef = useRef<HTMLElement>(null)
   const stageRef = useRef<HTMLDivElement>(null)
   const inView = useInView(stageRef, { amount: 0.3 })
+  useSectionLive(sectionRef)
   // pausar (hover, drag, fora da viewport) preserva o restante da cena
   const elapsedRef = useRef(0)
   const startedRef = useRef(0)
+
+  // tilt de profundidade: o vidro fica parado, só o MIOLO inclina
+  const tilt = useTilt(3)
+
+  // despedida em parallax: ao rolar para fora, o palco sobe mais rápido
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ['start start', 'end start'],
+  })
+  const exitProgress = useSpring(scrollYProgress, SOFT)
+  const stageY = useTransform(exitProgress, [0, 1], [0, -40])
+  const brainY = useTransform(exitProgress, [0, 1], [0, 28])
 
   const running = !reduced && inView && !manual && !hovered && !dragging
 
@@ -489,11 +538,12 @@ export function Hero() {
   const ctx = CONTEXTS[active]
 
   return (
-    <section className="relative overflow-hidden pt-24 sm:pt-28">
-      <img
+    <section ref={sectionRef} className="relative overflow-hidden pt-24 sm:pt-28">
+      <motion.img
         src="/brand/brain.png"
         alt=""
         className="pointer-events-none absolute -right-20 top-14 -z-10 w-[380px] opacity-[0.05]"
+        style={lite ? undefined : { y: brainY }}
       />
 
       <div className="mx-auto flex max-w-5xl flex-col items-center px-5 pb-16 text-center">
@@ -506,26 +556,12 @@ export function Hero() {
           Syntria Transcript
         </motion.p>
         <h1 className="mt-4 font-display text-4xl font-semibold leading-[1.1] tracking-tight text-ink-900 sm:text-5xl lg:text-[56px]">
-          <span className="-mb-[0.22em] inline-block overflow-hidden pb-[0.22em] align-bottom">
-            <motion.span
-              className="inline-block"
-              initial={{ y: '112%' }}
-              animate={{ y: 0 }}
-              transition={{ duration: 0.75, delay: 0.08, ease: EASE }}
-            >
-              <span className="font-light">Você só aperta gravar.</span>
-            </motion.span>
-          </span>{' '}
-          <span className="-mb-[0.22em] inline-block overflow-hidden pb-[0.22em] align-bottom">
-            <motion.span
-              className="inline-block"
-              initial={{ y: '112%' }}
-              animate={{ y: 0 }}
-              transition={{ duration: 0.75, delay: 0.18, ease: EASE }}
-            >
-              <span className="gradient-text font-semibold">O resto se escreve.</span>
-            </motion.span>
-          </span>
+          <MaskRise delay={0.08}>
+            <span className="font-light">Você só aperta gravar.</span>
+          </MaskRise>{' '}
+          <MaskRise delay={0.18}>
+            <span className="gradient-text font-semibold">O resto se escreve.</span>
+          </MaskRise>
         </h1>
         <motion.p
           className="mt-4 max-w-xl text-[15px] font-light leading-relaxed text-ink-500 sm:text-lg"
@@ -546,59 +582,72 @@ export function Hero() {
             showProgress={!reduced}
             cycleKey={`${active}-${stamp}`}
           />
-          <motion.div
-            ref={stageRef}
-            id="hero-stage"
-            role="tabpanel"
-            aria-labelledby={`chip-${ctx.id}`}
-            className="glass-strong glass-top-light mx-auto mt-4 w-full max-w-2xl rounded-[26px] p-5 text-left shadow-card sm:p-6"
-            initial={{ opacity: 0, y: 24, filter: 'blur(8px)' }}
-            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-            transition={{ duration: 0.7, delay: 0.4, ease: EASE }}
-            onPointerEnter={(e) => {
-              if (e.pointerType === 'mouse') setHovered(true)
-            }}
-            onPointerLeave={(e) => {
-              if (e.pointerType === 'mouse') setHovered(false)
-            }}
-            drag={coarse ? 'x' : false}
-            dragDirectionLock
-            dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={0.15}
-            onDragStart={() => setDragging(true)}
-            onDragEnd={(_, info) => {
-              setDragging(false)
-              const dx = info.offset.x
-              if (Math.abs(dx) <= Math.abs(info.offset.y)) return
-              if (dx < -48 && (dx < -80 || info.velocity.x < -200)) step(1)
-              else if (dx > 48 && (dx > 80 || info.velocity.x > 200)) step(-1)
-            }}
-          >
-            <div className="mb-4 flex justify-center border-b border-ink-100 pb-3">
-              <AnimatePresence mode="wait">
-                <motion.p
-                  key={ctx.id}
-                  className="eyebrow-brand"
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -6 }}
-                  transition={{ duration: 0.3, ease: EASE }}
-                >
-                  {ctx.label} · Modo {ctx.mode}
-                </motion.p>
-              </AnimatePresence>
-            </div>
-            <AnimatePresence mode="wait">
+          <motion.div style={lite ? undefined : { y: stageY }}>
+            <motion.div
+              ref={stageRef}
+              id="hero-stage"
+              role="tabpanel"
+              aria-labelledby={`chip-${ctx.id}`}
+              className="glass-strong glass-top-light mx-auto mt-4 w-full max-w-2xl rounded-[26px] p-5 text-left shadow-card sm:p-6"
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.4, ease: EASE }}
+              onPointerMove={tilt.onPointerMove}
+              onPointerEnter={(e) => {
+                if (e.pointerType === 'mouse') setHovered(true)
+              }}
+              onPointerLeave={(e) => {
+                tilt.reset()
+                if (e.pointerType === 'mouse') setHovered(false)
+              }}
+              drag={coarse ? 'x' : false}
+              dragDirectionLock
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.15}
+              onDragStart={() => setDragging(true)}
+              onDragEnd={(_, info) => {
+                setDragging(false)
+                const dx = info.offset.x
+                if (Math.abs(dx) <= Math.abs(info.offset.y)) return
+                if (dx < -48 && (dx < -80 || info.velocity.x < -200)) step(1)
+                else if (dx > 48 && (dx > 80 || info.velocity.x > 200)) step(-1)
+              }}
+            >
+              {/* o miolo inclina dentro do vidro parado */}
               <motion.div
-                key={ctx.id}
-                initial={{ opacity: 0, y: 14, filter: 'blur(5px)' }}
-                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                exit={{ opacity: 0, y: -10, filter: 'blur(5px)' }}
-                transition={{ duration: 0.4, ease: EASE }}
+                style={{
+                  rotateX: tilt.rotateX,
+                  rotateY: tilt.rotateY,
+                  transformPerspective: 900,
+                }}
               >
-                <SceneView scene={ctx.scene} reduced={reduced} />
+                <div className="mb-4 flex justify-center border-b border-ink-100 pb-3">
+                  <AnimatePresence mode="wait">
+                    <motion.p
+                      key={ctx.id}
+                      className="eyebrow-brand"
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -6 }}
+                      transition={{ duration: 0.3, ease: EASE }}
+                    >
+                      {ctx.label} · Modo {ctx.mode}
+                    </motion.p>
+                  </AnimatePresence>
+                </div>
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={ctx.id}
+                    initial={{ opacity: 0, y: 14 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -14 }}
+                    transition={{ duration: 0.4, ease: EASE }}
+                  >
+                    <SceneView scene={ctx.scene} reduced={reduced} />
+                  </motion.div>
+                </AnimatePresence>
               </motion.div>
-            </AnimatePresence>
+            </motion.div>
           </motion.div>
         </div>
 
