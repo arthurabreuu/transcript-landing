@@ -96,6 +96,15 @@ canvas {
   }
 }
 
+/* Trilho horizontal sem barra de rolagem visível (chips do hero) */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 .glass-top-light {
   position: relative;
 }
@@ -185,6 +194,21 @@ canvas {
   animation: wave-bar 1.15s ease-in-out infinite;
 }
 
+/* Barra de progresso do chip ativo (pausa de verdade via animation-play-state) */
+@keyframes chip-progress {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+.chip-progress {
+  animation-name: chip-progress;
+  animation-timing-function: linear;
+  animation-fill-mode: both;
+}
+
 /* Ponto REC pulsando */
 @keyframes rec-blink {
   0%,
@@ -207,7 +231,8 @@ canvas {
   .stagger > *,
   .caret,
   .wv,
-  .rec-dot {
+  .rec-dot,
+  .chip-progress {
     animation: none;
   }
 }

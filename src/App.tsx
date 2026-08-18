@@ -1,7 +1,9 @@
+import { MotionConfig } from 'framer-motion'
 import { Nav } from './components/Nav'
 import { Hero } from './components/Hero'
 import {
   HowItWorks,
+  UseCaseStrip,
   Audience,
   TimeMath,
   Features,
@@ -28,12 +30,13 @@ function AmbientBackground() {
 
 export default function App() {
   return (
-    <>
+    <MotionConfig reducedMotion="user">
       <AmbientBackground />
       <Nav />
       <main>
         <Hero />
         <HowItWorks />
+        <UseCaseStrip />
         <Audience />
         <TimeMath />
         <Features />
@@ -43,6 +46,6 @@ export default function App() {
         <FinalCta />
       </main>
       <Footer />
-    </>
+    </MotionConfig>
   )
 }

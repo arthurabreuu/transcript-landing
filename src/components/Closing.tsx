@@ -5,40 +5,48 @@ const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1]
 
 /* ---------- Planos ---------- */
 
+// Preços e horas em sincronia com o backend (PLAN_CATALOG em
+// app/services/professional_entitlement.py), a fonte da verdade. Não inventar
+// números aqui: qualquer mudança de preço/franquia acontece lá primeiro.
 const PLANS = [
   {
-    name: 'Clínico',
-    desc: 'Consultas e atendimentos com transcrição clínica',
-    monthly: 49.9,
+    name: 'Geral',
+    desc: 'Reuniões, aulas, palestras e entrevistas com transcrição automática',
+    monthly: 19.9,
+    annualMonthly: 9.9,
     features: [
-      'Transcrições clínicas ilimitadas',
-      'Falantes identificados',
-      'Evolução e anamnese prontas',
-      'Histórico por paciente',
+      'Transcrição automática de reuniões, aulas, palestras e entrevistas',
+      '12 horas de áudio por mês (mais, com créditos avulsos)',
+      'Brainstorm e próximos passos pela IA',
+      'Assistente de IA',
     ],
     highlight: false,
   },
   {
-    name: 'Geral',
-    desc: 'Reuniões, aulas e capturas com transcrição automática',
-    monthly: 39.9,
+    name: 'Clínico',
+    desc: 'Consultas e atendimentos com transcrição clínica',
+    monthly: 24.9,
+    annualMonthly: 12.9,
     features: [
-      'Transcrições gerais ilimitadas',
-      'Falantes identificados',
-      'Resumos automáticos',
-      'Busca em tudo que foi dito',
+      'Transcrição clínica de consultas e atendimentos',
+      '15 horas de áudio por mês (mais, com créditos avulsos)',
+      'Pacientes e prontuário',
+      'Resumo clínico pela IA',
+      'Assistente de IA',
     ],
     highlight: false,
   },
   {
     name: 'Completo',
-    desc: 'Clínico e Geral juntos, com o copiloto por voz',
-    monthly: 69.9,
+    desc: 'Clínico e Geral juntos, num só plano',
+    monthly: 34.9,
+    annualMonthly: 17.9,
     features: [
-      'Tudo do Clínico e do Geral',
-      'Copiloto por voz',
-      'Prioridade no processamento',
-      'Acesso antecipado a novidades',
+      'Modos Clínico e Geral (tudo incluso)',
+      '20 horas de áudio por mês (mais, com créditos avulsos)',
+      'Pacientes, prontuário e resumo clínico',
+      'Brainstorm de ideias e próximos passos',
+      'Assistente de IA',
     ],
     highlight: true,
   },
@@ -50,7 +58,7 @@ const fmt = (v: number) =>
 export function Pricing() {
   const [annual, setAnnual] = useState(true)
   return (
-    <section id="planos" className="mx-auto max-w-5xl px-5 pb-24">
+    <section id="planos" className="mx-auto max-w-5xl scroll-mt-20 px-5 pb-24">
       <div className="mx-auto max-w-2xl text-center">
         <motion.p
           className="eyebrow-brand"
@@ -108,7 +116,7 @@ export function Pricing() {
                 annual ? 'bg-white/20 text-white' : 'bg-brand/10 text-brand'
               }`}
             >
-              2 meses grátis
+              quase metade do preço
             </span>
           </button>
         </div>
@@ -116,8 +124,8 @@ export function Pricing() {
 
       <div className="mt-8 grid gap-3 lg:grid-cols-3">
         {PLANS.map((p, i) => {
-          const monthlyShown = annual ? (p.monthly * 10) / 12 : p.monthly
-          const yearTotal = p.monthly * 10
+          const monthlyShown = annual ? p.annualMonthly : p.monthly
+          const yearTotal = p.annualMonthly * 12
           return (
             <motion.div
               key={p.name}
@@ -202,20 +210,20 @@ export function Pricing() {
 
 const FAQS = [
   {
-    q: 'Preciso avisar o paciente que estou gravando?',
-    a: 'Sim, e recomendamos sempre. O consentimento do paciente é seu, e o app foi desenhado para esse fluxo: a gravação é explícita, visível durante toda a consulta e o áudio é apagado após a transcrição.',
+    q: 'Serve só para consultas e reuniões?',
+    a: 'Não. O modo Geral transcreve aulas, palestras, apresentações, treinamentos, entrevistas e qualquer conversa importante, com falantes identificados e o resumo que aquele contexto pede. O modo Clínico é otimizado para consultas e atendimentos.',
   },
   {
-    q: 'O que acontece com o áudio da consulta?',
-    a: 'Ele existe só até a transcrição terminar. Depois, é apagado: fica apenas o texto, criptografado. Excluir uma sessão remove tudo de verdade.',
+    q: 'Preciso avisar que estou gravando?',
+    a: 'Recomendamos sempre avisar. Vale para pacientes e também para participantes de reuniões, aulas e entrevistas. O app foi desenhado para esse fluxo: a gravação é explícita, visível o tempo todo e o áudio é apagado após a transcrição.',
   },
   {
-    q: 'Funciona para outras profissões além da saúde?',
-    a: 'Sim. O modo Geral transcreve reuniões, aulas, entrevistas e qualquer conversa, com falantes identificados e resumo. O modo Clínico é otimizado para consultas.',
+    q: 'O que acontece com o áudio da gravação?',
+    a: 'Ele existe só até a transcrição terminar. Depois, é apagado: fica apenas o texto. Excluir uma sessão remove tudo de verdade.',
   },
   {
     q: 'A transcrição é boa mesmo em português?',
-    a: 'O Transcript é feito para o português do Brasil, incluindo vocabulário clínico. Termos técnicos, medicamentos e posologia são o dia a dia dele.',
+    a: 'O Transcript é feito para o português do Brasil, do vocabulário clínico ao das reuniões, aulas e entrevistas. Termos técnicos, siglas, medicamentos e posologia são o dia a dia dele.',
   },
   {
     q: 'Como funcionam as 3 transcrições grátis?',
@@ -223,7 +231,7 @@ const FAQS = [
   },
   {
     q: 'Posso cancelar quando quiser?',
-    a: 'Sim, direto no app, sem multa e sem fidelidade. O plano mensal é mensal de verdade.',
+    a: 'Sim, sem multa e sem fidelidade. O plano mensal é mensal de verdade.',
   },
 ]
 
@@ -254,6 +262,7 @@ export function Faq() {
           >
             <button
               type="button"
+              aria-expanded={open === i}
               onClick={() => setOpen(open === i ? null : i)}
               className="flex w-full items-center justify-between px-5 py-4 text-left"
             >
@@ -314,7 +323,7 @@ export function FinalCta() {
         viewport={{ once: true }}
         transition={{ duration: 0.65, delay: 0.08, ease: EASE }}
       >
-        <span className="font-light">Sua próxima consulta já pode ser </span>
+        <span className="font-light">Sua próxima conversa já pode ser </span>
         <span className="gradient-text">sem digitação.</span>
       </motion.h2>
       <motion.div
@@ -356,9 +365,9 @@ export function Footer() {
           </span>
         </div>
         <p className="max-w-md text-[11px] font-light leading-relaxed text-ink-300">
-          O Syntria Transcript apoia o registro clínico. O conteúdo gerado deve
-          ser revisado pelo profissional responsável antes de integrar o
-          prontuário.
+          O Syntria Transcript apoia o registro de conversas importantes. No uso
+          clínico, o conteúdo gerado deve ser revisado pelo profissional
+          responsável antes de integrar o prontuário.
         </p>
         <p className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-ink-300">
           © 2026 Syntria.ai

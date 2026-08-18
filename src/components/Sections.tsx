@@ -52,7 +52,7 @@ const STEPS = [
   {
     n: '01',
     title: 'Toque em gravar',
-    body: 'No começo da consulta, da reunião ou da aula: um toque. O Transcript trabalha em silêncio.',
+    body: 'No começo da consulta, da reunião, da aula ou da palestra: um toque. O Transcript trabalha em silêncio.',
   },
   {
     n: '02',
@@ -62,13 +62,13 @@ const STEPS = [
   {
     n: '03',
     title: 'Receba o resultado certo',
-    body: 'Ao encerrar, chega o que aquele contexto pede: evolução clínica, ata com tarefas ou resumo com ideias.',
+    body: 'Ao encerrar, chega o que aquele contexto pede: evolução clínica, ata com tarefas, resumo da aula ou notas da palestra.',
   },
 ]
 
 export function HowItWorks() {
   return (
-    <section id="como" className="mx-auto max-w-6xl px-5 py-24">
+    <section id="como" className="mx-auto max-w-6xl scroll-mt-20 px-5 py-24">
       <Head
         eyebrow="Como funciona"
         title={
@@ -100,12 +100,58 @@ export function HowItWorks() {
   )
 }
 
+/* ---------- De conversa a documento ---------- */
+
+const PAIRS = [
+  { from: 'Consulta', to: 'evolução pronta' },
+  { from: 'Reunião', to: 'ata com tarefas' },
+  { from: 'Aula', to: 'resumo de estudo' },
+  { from: 'Palestra', to: 'notas e citações' },
+  { from: 'Entrevista', to: 'ficha comparável' },
+  { from: 'Treinamento', to: 'manual do processo' },
+]
+
+/** Resumo escaneável do palco do hero, para quem não espera a animação. */
+export function UseCaseStrip() {
+  return (
+    <section className="mx-auto max-w-5xl px-5 pb-24">
+      <motion.p
+        className="eyebrow-brand text-center"
+        initial={{ opacity: 0, y: 12 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5, ease: EASE }}
+      >
+        De conversa a documento
+      </motion.p>
+      <div className="mt-6 flex flex-wrap justify-center gap-2">
+        {PAIRS.map((p, i) => (
+          <motion.span
+            key={p.from}
+            className="glass-subtle glass-top-light flex items-center gap-2 rounded-pill px-4 py-2 font-mono text-[12px]"
+            initial={{ opacity: 0, y: 12 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-40px' }}
+            transition={{ duration: 0.45, delay: i * 0.06, ease: EASE }}
+          >
+            <span className="text-ink-500">{p.from}</span>
+            <svg className="h-3 w-3 shrink-0 text-brand" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
+            <span className="font-medium text-brand-600">{p.to}</span>
+          </motion.span>
+        ))}
+      </div>
+    </section>
+  )
+}
+
 /* ---------- Para quem é ---------- */
 
 const AUDIENCES = [
   {
     title: 'Nutricionistas',
-    body: 'Recordatório, antropometria e anamnese alimentar preenchidos enquanto você conversa com o paciente. A consulta rende o dobro.',
+    body: 'Recordatório, antropometria e anamnese alimentar organizados a partir da conversa com o paciente. A consulta rende o dobro.',
     featured: true,
   },
   {
@@ -115,7 +161,7 @@ const AUDIENCES = [
   },
   {
     title: 'Psicólogos e terapeutas',
-    body: 'O registro da sessão sem tirar os olhos de quem fala. Áudio apagado, texto criptografado.',
+    body: 'O registro da sessão sem tirar os olhos de quem fala. O áudio é apagado depois de transcrito.',
     featured: false,
   },
   {
@@ -123,6 +169,25 @@ const AUDIENCES = [
     body: 'Reuniões viram atas, calls viram briefings, brainstorms viram planos com dono e prazo.',
     featured: false,
   },
+  {
+    title: 'Professores e estudantes',
+    body: 'Aulas e cursos viram resumos de estudo, com os pontos que o professor marcou como importantes.',
+    featured: false,
+  },
+  {
+    title: 'Palestrantes e criadores',
+    body: 'Palestras, workshops e gravações viram notas, citações e conteúdo pronto para reaproveitar.',
+    featured: false,
+  },
+]
+
+const ALSO = [
+  'Mentorias',
+  'Reuniões 1:1',
+  'Entrevistas',
+  'Defesas e bancas',
+  'Podcasts',
+  'Aquela conversa com o contador',
 ]
 
 export function Audience() {
@@ -137,7 +202,7 @@ export function Audience() {
           </>
         }
       />
-      <div className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {AUDIENCES.map((a, i) => (
           <motion.div
             key={a.title}
@@ -161,6 +226,34 @@ export function Audience() {
           </motion.div>
         ))}
       </div>
+
+      <motion.div
+        className="mt-8 flex flex-wrap items-center justify-center gap-2"
+        initial={{ opacity: 0, y: 14 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-40px' }}
+        transition={{ duration: 0.55, ease: EASE }}
+      >
+        <span className="text-[12px] font-light text-ink-300">e também:</span>
+        {ALSO.map((t) => (
+          <span
+            key={t}
+            className="glass-subtle rounded-pill px-3 py-1.5 text-[12px] text-ink-500"
+          >
+            {t}
+          </span>
+        ))}
+      </motion.div>
+      <motion.p
+        className="mt-5 text-center text-[13.5px] font-light text-ink-400"
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6, delay: 0.15 }}
+      >
+        Se a conversa importa,{' '}
+        <span className="font-semibold text-ink-900">o Transcript escreve.</span>
+      </motion.p>
     </section>
   )
 }
@@ -198,14 +291,14 @@ export function TimeMath() {
           <h2 className="mx-auto mt-3 max-w-3xl font-display text-3xl font-semibold tracking-tight sm:text-[40px]">
             <span className="font-light">Dez minutos de anotações por conversa são </span>
             <span className="gradient-text-dark font-semibold">
-              duas semanas do seu ano.
+              sete semanas do seu ano.
             </span>
           </h2>
           <div className="mx-auto mt-12 grid max-w-3xl gap-3 sm:grid-cols-3">
             {[
               { big: '10 min', small: 'de registro manual por conversa' },
-              { big: '× 16', small: 'consultas ou reuniões por dia' },
-              { big: '≈ 88h', small: 'por ano viram tempo de atendimento' },
+              { big: '× 8', small: 'conversas por dia' },
+              { big: '≈ 290h', small: 'por ano de volta para o seu trabalho' },
             ].map((s, i) => (
               <motion.div
                 key={s.big}
@@ -244,19 +337,19 @@ const FEATURES = [
     body: 'Quem disse o quê, separado automaticamente, seja consulta, reunião ou entrevista.',
   },
   {
-    title: 'A ficha se preenche sozinha',
-    body: 'Anamnese, evolução e antropometria na clínica; ata, briefing e tarefas na reunião. No seu padrão.',
+    title: 'Resumo pronto pro seu padrão',
+    body: 'Anamnese e evolução na clínica; ata, briefing e tarefas na reunião; resumo e pontos-chave na aula ou palestra.',
   },
   {
     title: 'Modo Clínico e modo Geral',
-    body: 'Consultas com vocabulário clínico, reuniões e aulas com transcrição direta. Ou os dois no Completo.',
+    body: 'Consultas com vocabulário clínico; reuniões, aulas, palestras e entrevistas com transcrição direta. Ou os dois no Completo.',
   },
   {
     title: 'Tudo organizado por pessoa',
-    body: 'Cada gravação no histórico certo: paciente, cliente ou projeto. Busque qualquer coisa que foi dita.',
+    body: 'Cada gravação no histórico certo: paciente, cliente, turma ou projeto. Busque qualquer coisa que foi dita.',
   },
   {
-    title: 'Copiloto por voz',
+    title: 'Assistente por voz',
     body: 'Converse com o assistente sobre suas gravações: buscar, resumir, gerar ideias a partir do que foi dito.',
   },
   {
@@ -333,9 +426,9 @@ export function Security() {
           <span className="gradient-text">fica entre vocês.</span>
         </h2>
         <p className="mx-auto mt-4 max-w-xl text-[14px] font-light leading-relaxed text-ink-400">
-          O áudio é processado e apagado: fica só o texto, criptografado. Excluir
-          uma sessão remove tudo, inclusive o áudio, de verdade. Seus dados não
-          treinam modelos de terceiros.
+          O áudio é processado e apagado: fica só o texto. Excluir uma sessão
+          remove tudo, inclusive o áudio, de verdade. Seus dados não treinam
+          modelos de terceiros.
         </p>
       </motion.div>
     </section>
