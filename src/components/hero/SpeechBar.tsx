@@ -124,12 +124,12 @@ export function Sentence({
   const typing = !reduced && phase < 1
 
   return (
-    <div className="flex min-h-[52px] items-start gap-2 pr-[104px] sm:min-h-[36px] sm:items-center sm:pr-[190px]">
+    <div className="flex min-h-[52px] items-start gap-2 pr-[104px] sm:pr-[190px]">
       <span className="shrink-0 rounded-pill bg-ink-100/80 px-2.5 py-1 font-mono text-[9.5px] uppercase tracking-[0.12em] text-ink-400">
         {speaker}
       </span>
       <motion.p
-        className="line-clamp-2 min-w-0 flex-1 text-left text-[13px] font-light leading-snug tracking-tight text-ink-900 sm:line-clamp-1 sm:text-[14.5px]"
+        className="line-clamp-2 min-w-0 flex-1 text-left text-[13px] font-light leading-snug tracking-tight text-ink-900 sm:text-[14.5px]"
         style={{ originX: 0 }}
         animate={{
           scale: phase >= 2 ? 0.94 : 1,

@@ -11,6 +11,7 @@ import {
   Security,
 } from './components/Sections'
 import { Pricing, Faq, FinalCta, Footer } from './components/Closing'
+import { FloatingWhatsApp } from './components/FloatingWhatsApp'
 import { SOFT } from './motion/tokens'
 import { useLite } from './motion/hooks'
 
@@ -159,6 +160,7 @@ export default function App() {
         <FinalCta />
       </main>
       <Footer />
+      <FloatingWhatsApp />
     </MotionConfig>
   )
 }

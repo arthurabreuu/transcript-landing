@@ -60,10 +60,13 @@ export const ICONS = {
       <path d="M9 4.5V3h6v1.5M9 10h6M9 14h6M9 18h3" />
     </>,
   ),
-  checkbox: icon(
+  // checklist VAZIO de propósito: o Transcript organiza, quem marca é você
+  checklist: icon(
     <>
-      <rect x="4" y="4" width="16" height="16" rx="3" />
-      <path d="M8.5 12.5 11 15l4.5-5.5" />
+      <rect x="4" y="4" width="6" height="6" rx="1.5" />
+      <path d="M13 7h7" />
+      <rect x="4" y="14" width="6" height="6" rx="1.5" />
+      <path d="M13 17h7" />
     </>,
   ),
   cartas: icon(
@@ -81,7 +84,12 @@ export const ICONS = {
       <path d="m4 7 8 6 8-6" />
     </>,
   ),
-  barras: icon(<path d="M5 20V10M12 20V4M19 20v-7" />),
+  etiqueta: icon(
+    <>
+      <path d="M20.6 13.4 12 22 2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8z" transform="scale(0.9) translate(1.2 1.2)" />
+      <circle cx="7.5" cy="7.5" r="1" />
+    </>,
+  ),
   lista: icon(<path d="M8 6h12M8 12h12M8 18h12M4 6h.5M4 12h.5M4 18h.5" />),
   cadeado: icon(
     <>
@@ -120,7 +128,7 @@ export const CONTEXTS: HeroContext[] = [
     label: 'Reunião',
     mode: 'Geral',
     time: '10h00',
-    icon: ICONS.checkbox,
+    icon: ICONS.checklist,
     docTitle: 'Ata · Reunião de projeto',
     speaker: 'Você',
     parts: [
@@ -200,7 +208,7 @@ export const CONTEXTS: HeroContext[] = [
     label: 'Entrevista',
     mode: 'Geral',
     time: '17h00',
-    icon: ICONS.barras,
+    icon: ICONS.etiqueta,
     docTitle: 'Ficha da candidata · Ana',
     speaker: 'Candidata',
     parts: [
@@ -224,8 +232,7 @@ export const CONTEXTS: HeroContext[] = [
     docTitle: 'Manual do processo · Pedidos',
     speaker: 'Instrutor',
     parts: [
-      { t: 'Primeiro ' },
-      { t: 'valida o pedido', k: true },
+      { t: 'Valida o pedido', k: true },
       { t: ', depois ' },
       { t: 'libera o estoque', k: true },
       { t: ' e ' },

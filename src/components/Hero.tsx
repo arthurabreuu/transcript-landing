@@ -22,8 +22,9 @@ const MANUAL_RESUME_MS = 14000
  * Palco DocStage do hero: a MESMA gravação vira um DOCUMENTO DIFERENTE
  * por contexto. O gravador no topo é constante de propósito (o input não
  * muda); a folha embaixo é o protagonista, e cada uma nasce com um verbo
- * de animação exclusivo: carimbar, marcar, virar, ampliar, enviar,
- * encher barras, desenhar a espinha, convergir e selar.
+ * de animação exclusivo: carimbar, dar dono e prazo, virar, ampliar,
+ * redigir, etiquetar, desenhar a espinha, convergir e selar. As cenas só
+ * ORGANIZAM o que foi falado; nada de enviar, avaliar ou inventar.
  */
 
 /** Trilho de chips: vitrine das 8 saídas diferentes, com ícone por documento. */
@@ -319,7 +320,7 @@ export function Hero() {
                 />
 
                 {/* a fonte: a fala, igual em toda cena de propósito */}
-                <div className="min-h-[52px] sm:min-h-[36px]">
+                <div className="min-h-[52px]">
                   <AnimatePresence mode="wait" initial={false}>
                     <motion.div
                       key={sceneKey}

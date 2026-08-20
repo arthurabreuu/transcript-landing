@@ -5,9 +5,11 @@ import { CountUp, DrawPath } from '../../motion/primitives'
 
 /**
  * Os 8 corpos de documento do palco. Cada um tem um verbo de animação
- * EXCLUSIVO: carimbar, marcar checkbox, virar flashcard 3D, ampliar
- * tipografia, enviar e-mail, encher barras, desenhar espinha, convergir
- * e selar. Nenhum par de cenas compartilha o verbo principal.
+ * EXCLUSIVO: carimbar, dar dono e prazo, virar o trecho em nota, ampliar
+ * tipografia, redigir rascunho, etiquetar por tema, desenhar espinha,
+ * convergir e selar. Nenhum par de cenas compartilha o verbo principal.
+ * REGRA DE HONESTIDADE: todo dado exibido é derivável da fala mostrada
+ * (o Transcript ORGANIZA o que foi dito; nunca envia, avalia ou inventa).
  * Contrato: phase 0..5 (com reduced motion a fase já chega no máximo).
  */
 export interface DocBodyProps {
@@ -202,11 +204,12 @@ export function DocProntuario({ phase, lite }: DocBodyProps) {
   )
 }
 
-/* ---------- 2. Reunião · Ata com tarefas (verbo: MARCAR) ---------- */
+/* ---------- 2. Reunião · Ata com tarefas (verbo: DAR DONO E PRAZO) ---------- */
 
-const TASKS = [
-  { text: 'Revisar proposta comercial', who: 'VC', when: 'sexta' },
-  { text: 'Fechar com o fornecedor', who: 'LÉ', when: 'semana' },
+// tudo aqui foi FALADO: dono e prazo só aparecem quando ditos
+const TASKS: Array<{ text: string; who: string; when?: string }> = [
+  { text: 'Revisar a proposta', who: 'VC', when: 'sexta' },
+  { text: 'Fechar com o fornecedor', who: 'LÉ' },
 ]
 
 export function DocAta({ phase, lite }: DocBodyProps) {
@@ -246,13 +249,15 @@ export function DocAta({ phase, lite }: DocBodyProps) {
               >
                 {t.who}
               </Pop>
-              <Pop
-                on={phase >= 3}
-                delay={lite ? 0 : 0.15 + i * 0.12}
-                className="rounded-pill border border-ink-100 bg-ink-50 px-2 py-0.5 font-mono text-[9px] text-ink-500"
-              >
-                {t.when}
-              </Pop>
+              {t.when && (
+                <Pop
+                  on={phase >= 3}
+                  delay={lite ? 0 : 0.15 + i * 0.12}
+                  className="rounded-pill border border-ink-100 bg-ink-50 px-2 py-0.5 font-mono text-[9px] text-ink-500"
+                >
+                  {t.when}
+                </Pop>
+              )}
             </motion.div>
           )
         })}
@@ -300,7 +305,7 @@ export function DocResumo({ phase, lite }: DocBodyProps) {
       <div className="space-y-1.5">
         {[
           'Fotossíntese converte luz em energia química',
-          'A clorofila absorve a luz nas folhas',
+          'Ponto de prova marcado pela professora',
         ].map((b, i) => (
           <div key={b} className="flex gap-2">
             <Pop on={phase >= 2} delay={lite ? 0 : i * 0.15} className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-brand" />
@@ -412,17 +417,14 @@ export function DocCitacao({ phase }: DocBodyProps) {
         transition={{ duration: 0.5 }}
       >
         <p className="mt-2.5 font-mono text-[9.5px] uppercase tracking-[0.14em] text-ink-400">
-          Palestrante · principal insight
-        </p>
-        <p className="mt-1.5 text-[11.5px] text-ink-500">
-          Decisão é emocional, justificativa vem depois
+          Palestrante · citação marcada
         </p>
       </motion.div>
     </div>
   )
 }
 
-/* ---------- 5. Apresentação · E-mail (verbo: ENVIAR) ---------- */
+/* ---------- 5. Apresentação · E-mail (verbo: REDIGIR RASCUNHO) ---------- */
 
 const EMAIL_BODY = [
   { w: 'Nossa' },
@@ -451,23 +453,20 @@ export function DocEmail({ phase }: DocBodyProps) {
         </div>
         <div className="border-b border-ink-50 px-3 py-1.5 font-mono text-[10.5px]">
           <span className="text-ink-400">Para: </span>
-          <TypedLine
-            words={[{ w: 'cliente@empresa.com' }]}
-            on={phase >= 2}
-            className="text-ink-800"
-          />
+          {/* o destinatário é SEU: o produto não teria como saber */}
+          <span className="text-ink-300">adicionar destinatário</span>
         </div>
         <div className="border-b border-ink-50 px-3 py-1.5 font-mono text-[10.5px]">
           <span className="text-ink-400">Assunto: </span>
           <TypedLine
             words={[{ w: 'Follow-up' }, { w: 'da' }, { w: 'proposta' }]}
-            on={phase >= 3}
+            on={phase >= 2}
             speed={0.06}
             className="text-ink-800"
           />
         </div>
         <div className="px-3 py-2.5 text-[12px] leading-relaxed text-ink-700">
-          <TypedLine words={EMAIL_BODY} on={phase >= 4} speed={0.035} />
+          <TypedLine words={EMAIL_BODY} on={phase >= 3} speed={0.035} />
         </div>
         <div className="flex justify-end px-3 pb-2.5">
           <Pop
@@ -485,7 +484,7 @@ export function DocEmail({ phase }: DocBodyProps) {
   )
 }
 
-/* ---------- 6. Entrevista · Ficha (verbo: ENCHER BARRAS) ---------- */
+/* ---------- 6. Entrevista · Ficha (verbo: ETIQUETAR POR TEMA) ---------- */
 
 const TOPICS = [
   { label: 'Liderança', quote: 'liderei a migração do sistema' },
@@ -506,26 +505,27 @@ export function DocFicha({ phase, lite }: DocBodyProps) {
       <div className="mt-3 space-y-2">
         {TOPICS.map((t, i) => (
           <div key={t.label} className="flex items-center gap-2.5">
-            {/* a etiqueta CARIMBA o tema no trecho: organizar é classificar */}
+            {/* a etiqueta DESLIZA para o trecho: organizar é classificar
+                (gesto próprio, distinto do carimbo do prontuário) */}
             <motion.span
               className="w-[86px] shrink-0 rounded-pill bg-brand-100 px-2 py-1 text-center font-mono text-[9px] uppercase tracking-[0.08em] text-brand-700"
-              initial={{ opacity: 0, scale: 1.35, rotate: -6 }}
+              initial={{ opacity: 0, x: -14 }}
               animate={
-                phase >= 3 + i
-                  ? { opacity: 1, scale: 1, rotate: 0 }
-                  : { opacity: 0, scale: 1.35, rotate: -6 }
+                phase >= 3 + i ? { opacity: 1, x: 0 } : { opacity: 0, x: -14 }
               }
               transition={SNAP}
             >
               {t.label}
             </motion.span>
-            <MaskLine
-              on={phase >= 2}
-              delay={lite ? 0 : i * 0.12}
-              className="flex-1 rounded-lg border border-ink-100 bg-white px-3 py-2 text-[11.5px] text-ink-700"
-            >
-              “{t.quote}”
-            </MaskLine>
+            <span className="flex-1 rounded-lg border border-ink-100 bg-white px-3 py-2">
+              <MaskLine
+                on={phase >= 2}
+                delay={lite ? 0 : i * 0.12}
+                className="text-[11.5px] text-ink-700"
+              >
+                “{t.quote}”
+              </MaskLine>
+            </span>
           </div>
         ))}
       </div>
@@ -543,10 +543,11 @@ export function DocFicha({ phase, lite }: DocBodyProps) {
 
 /* ---------- 7. Treinamento · Manual (verbo: DESENHAR A ESPINHA) ---------- */
 
+// subs descrevem só a ORDEM que o instrutor ditou, nada inventado
 const STEPS = [
-  { title: 'Validar o pedido', sub: 'conferir dados e pagamento' },
+  { title: 'Validar o pedido', sub: 'primeiro passo' },
   { title: 'Liberar o estoque', sub: 'só depois da validação' },
-  { title: 'Confirmar com o cliente', sub: 'fecha o atendimento' },
+  { title: 'Confirmar com o cliente', sub: 'fecha o processo' },
 ]
 
 export function DocManual({ phase, lite }: DocBodyProps) {
@@ -591,6 +592,14 @@ export function DocManual({ phase, lite }: DocBodyProps) {
           </div>
         )
       })}
+      <motion.p
+        className="mt-1 font-mono text-[9.5px] text-ink-400"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: phase >= 5 ? 1 : 0 }}
+        transition={{ duration: 0.4 }}
+      >
+        manual em 3 passos · pronto para revisar
+      </motion.p>
     </div>
   )
 }
