@@ -10,6 +10,7 @@ import {
   Features,
   Security,
 } from './components/Sections'
+import { Students } from './components/Students'
 import { Pricing, Faq, FinalCta, Footer } from './components/Closing'
 import { FloatingWhatsApp } from './components/FloatingWhatsApp'
 import { SOFT } from './motion/tokens'
@@ -151,6 +152,7 @@ export default function App() {
         <Hero />
         <HowItWorks />
         <UseCaseStrip />
+        <Students />
         <Audience />
         <TimeMath />
         <Features />

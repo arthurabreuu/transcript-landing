@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import {
   AnimatePresence,
   motion,
@@ -152,6 +152,106 @@ function ContextRail({
   )
 }
 
+/** Os 3 passos do produto em uma tira: o que é, antes de ver o palco. */
+const QUICK_STEPS = [
+  {
+    t: 'Você grava a conversa',
+    icon: (
+      <>
+        <rect x="9" y="3" width="6" height="11" rx="3" />
+        <path d="M5 11a7 7 0 0 0 14 0M12 18v3" />
+      </>
+    ),
+  },
+  {
+    t: 'A IA transcreve e separa as vozes',
+    icon: (
+      <>
+        <path d="M12 4.5 13.3 8l3.5 1.3-3.5 1.3L12 14l-1.3-3.4L7.2 9.3 10.7 8z" />
+        <path d="M18 14.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z" />
+      </>
+    ),
+  },
+  {
+    t: 'Você recebe o documento pronto',
+    icon: (
+      <>
+        <path d="M6 3.5h7.5L18 8v12.5H6z" />
+        <path d="M13 3.5V8h5M9 12h6M9 16h4" />
+      </>
+    ),
+  },
+]
+
+function QuickSteps() {
+  return (
+    <>
+      <motion.div
+        className="glass-flat glass-top-light mt-7 flex w-full max-w-4xl flex-col items-stretch gap-1 rounded-[22px] border px-4 py-3 sm:flex-row sm:items-center sm:justify-center sm:gap-2.5 sm:rounded-pill sm:px-6"
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.42, ease: EASE }}
+      >
+        {QUICK_STEPS.map((s, i) => (
+          <Fragment key={s.t}>
+            {i > 0 && (
+              <motion.span
+                aria-hidden="true"
+                className="flex items-center justify-start py-0.5 pl-[11px] text-brand-300 sm:justify-center sm:py-0 sm:pl-0"
+                initial={{ opacity: 0, scale: 0.6 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ ...SNAP, delay: 0.62 + i * 0.14 }}
+              >
+                <svg
+                  className="h-3.5 w-3.5 rotate-90 sm:rotate-0"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.4"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M5 12h14M13 6l6 6-6 6" />
+                </svg>
+              </motion.span>
+            )}
+            <motion.span
+              className="flex items-center gap-2.5 text-left text-[12.5px] font-medium text-ink-700 sm:whitespace-nowrap sm:text-[13px]"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ ...SNAP, delay: 0.5 + i * 0.14 }}
+            >
+              <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand/10 text-brand">
+                <svg
+                  className="h-3.5 w-3.5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.9"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  {s.icon}
+                </svg>
+              </span>
+              {s.t}
+            </motion.span>
+          </Fragment>
+        ))}
+      </motion.div>
+      <motion.p
+        className="mt-2.5 text-[12px] font-light text-ink-400"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.9 }}
+      >
+        É basicamente isso: sem digitar, sem gravador separado, sem perder o fio
+        da conversa.
+      </motion.p>
+    </>
+  )
+}
+
 export function Hero() {
   const reduced = useReducedMotion() ?? false
   const coarse = useMediaQuery('(pointer: coarse)')
@@ -245,6 +345,15 @@ export function Hero() {
         >
           Syntria Transcript
         </motion.p>
+        <motion.p
+          className="mt-2 font-display text-[15px] font-light tracking-tight text-ink-500 sm:text-[17px]"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.55, delay: 0.05, ease: EASE }}
+        >
+          A <span className="font-semibold text-ink-900">transcrição perfeita</span>{' '}
+          com ajuda de IA
+        </motion.p>
         <h1 className="mt-4 font-display text-4xl font-semibold leading-[1.1] tracking-tight text-ink-900 sm:text-5xl lg:text-[56px]">
           <MaskRise delay={0.08}>
             <span className="font-light">Você só aperta gravar.</span>
@@ -262,6 +371,8 @@ export function Hero() {
           Consulta, reunião, aula, palestra ou entrevista: o Transcript ouve,
           identifica quem falou e devolve o documento que aquele momento pede.
         </motion.p>
+
+        <QuickSteps />
 
         {/* palco DocStage: um gravador, oito documentos */}
         <div className="mt-9 w-full">

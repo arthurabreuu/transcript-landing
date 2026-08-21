@@ -280,8 +280,12 @@ const FAQS = [
     a: 'Não. O modo Geral transcreve aulas, palestras, apresentações, treinamentos, entrevistas e qualquer conversa importante, com falantes identificados e o resumo que aquele contexto pede. O modo Clínico é otimizado para consultas e atendimentos.',
   },
   {
+    q: 'Funciona para gravar aula e curso online?',
+    a: 'Sim, é um dos usos que mais crescem. Grave a aula, receba a transcrição com resumo e pontos-chave e depois converse com o assistente sobre aquele conteúdo: pedir um trecho específico, montar perguntas de revisão, tirar a dúvida do que passou batido.',
+  },
+  {
     q: 'Preciso avisar que estou gravando?',
-    a: 'Recomendamos sempre avisar. Vale para pacientes e também para participantes de reuniões, aulas e entrevistas. O app foi desenhado para esse fluxo: a gravação é explícita, visível o tempo todo e o áudio é apagado após a transcrição.',
+    a: 'Sim, sempre avise. Vale para paciente, para participante de reunião, de aula e de entrevista, e vale também seguir a regra do seu contexto: consultório, empresa ou instituição de ensino. O app foi desenhado para esse fluxo: a gravação é explícita, visível o tempo todo, e o áudio é apagado após a transcrição.',
   },
   {
     q: 'O que acontece com o áudio da gravação?',
@@ -493,6 +497,10 @@ export function Footer() {
             Syntria <span className="text-ink-400">Transcript</span>
           </span>
         </div>
+        <p className="max-w-[17rem] text-[11.5px] font-light leading-relaxed text-ink-400">
+          Grave, transcreva e transforme conversa em documento. Para o trabalho
+          e para os estudos.
+        </p>
         <p className="max-w-md text-[11px] font-light leading-relaxed text-ink-300">
           O Syntria Transcript apoia o registro de conversas importantes. No uso
           clínico, o conteúdo gerado deve ser revisado pelo profissional

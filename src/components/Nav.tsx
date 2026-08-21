@@ -40,6 +40,9 @@ export function Nav() {
           <a href="#como" className="hidden text-[13px] font-medium text-ink-400 transition-colors hover:text-ink-900 sm:block">
             Como funciona
           </a>
+          <a href="#estudantes" className="hidden text-[13px] font-medium text-ink-400 transition-colors hover:text-ink-900 lg:block">
+            Para estudantes
+          </a>
           <a href="#planos" className="hidden text-[13px] font-medium text-ink-400 transition-colors hover:text-ink-900 sm:block">
             Planos
           </a>

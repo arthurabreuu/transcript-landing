@@ -187,6 +187,11 @@ export function UseCaseStrip() {
 
 const AUDIENCES = [
   {
+    title: 'Estudantes',
+    body: 'Aula, curso online e videoaula viram resumo de estudo. Depois, o assistente responde suas dúvidas sobre o que foi gravado.',
+    featured: false,
+  },
+  {
     title: 'Nutricionistas',
     body: 'Recordatório, antropometria e anamnese alimentar organizados a partir da conversa com o paciente. A consulta rende o dobro.',
     featured: true,
@@ -207,13 +212,8 @@ const AUDIENCES = [
     featured: false,
   },
   {
-    title: 'Professores e estudantes',
-    body: 'Aulas e cursos viram resumos de estudo, com os pontos que o professor marcou como importantes.',
-    featured: false,
-  },
-  {
-    title: 'Palestrantes e criadores',
-    body: 'Palestras, workshops e gravações viram notas, citações e conteúdo pronto para reaproveitar.',
+    title: 'Professores e palestrantes',
+    body: 'Aula, workshop e palestra viram material de apoio, com notas e citações prontas para reaproveitar.',
     featured: false,
   },
 ]
@@ -236,7 +236,7 @@ export function Audience() {
         title={
           <>
             <span className="font-light">Feito para quem </span>
-            <span className="gradient-text">vive de ouvir pessoas.</span>
+            <span className="gradient-text">vive de ouvir e de estudar.</span>
           </>
         }
       />
@@ -378,7 +378,7 @@ export function TimeMath() {
       node: (
         <CountUp to={290} duration={1.4} delay={0.25} format={(v) => `≈ ${Math.round(v)}h`} />
       ),
-      small: 'por ano de volta para o seu trabalho',
+      small: 'por ano de volta para o seu trabalho (ou para os seus estudos)',
     },
   ]
 
@@ -452,7 +452,8 @@ export function TimeMath() {
             transition={{ duration: 0.6, delay: 0.35 }}
           >
             Com o Transcript, o registro acontece durante a conversa, não depois
-            dela. Você fecha o dia com tudo documentado e a cabeça livre.
+            dela. Você fecha o dia, ou a aula, com tudo documentado e a cabeça
+            livre.
           </motion.p>
         </div>
       </Rise>
@@ -465,7 +466,7 @@ export function TimeMath() {
 const FEATURES = [
   {
     title: 'Falantes identificados',
-    body: 'Quem disse o quê, separado automaticamente, seja consulta, reunião ou entrevista.',
+    body: 'Quem disse o quê, separado automaticamente, seja consulta, reunião, aula ou entrevista.',
   },
   {
     title: 'Resumo pronto pro seu padrão',
@@ -477,11 +478,11 @@ const FEATURES = [
   },
   {
     title: 'Tudo organizado por pessoa',
-    body: 'Cada gravação no histórico certo: paciente, cliente, turma ou projeto. Busque qualquer coisa que foi dita.',
+    body: 'Cada gravação no histórico certo: paciente, cliente, matéria ou projeto. Busque qualquer coisa que foi dita.',
   },
   {
     title: 'Assistente por voz',
-    body: 'Converse com o assistente sobre suas gravações: buscar, resumir, gerar ideias a partir do que foi dito.',
+    body: 'Converse com o assistente sobre suas gravações: buscar um trecho, resumir, gerar pergunta de revisão a partir do que foi dito.',
   },
   {
     title: 'Privacidade por padrão',
@@ -711,7 +712,8 @@ export function Security() {
         <p className="mx-auto mt-4 max-w-xl text-[14px] font-light leading-relaxed text-ink-400">
           O áudio é processado e apagado: fica só o texto. Excluir uma sessão
           remove tudo, inclusive o áudio, de verdade. Seus dados não treinam
-          modelos de terceiros.
+          modelos de terceiros. Vale para uma sessão clínica, uma reunião ou a
+          aula que você gravou.
         </p>
       </motion.div>
     </section>
