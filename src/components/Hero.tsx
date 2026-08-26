@@ -500,7 +500,7 @@ export function Hero() {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.67 }}
         >
-          3 transcrições grátis para testar. Assine quando quiser.
+          A primeira transcrição é grátis. Assine quando quiser.
         </motion.p>
 
         <motion.div

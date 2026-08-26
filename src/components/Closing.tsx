@@ -82,12 +82,12 @@ export function Pricing() {
         <Rise dist={18} delay={0.06}>
           <h2 className="mt-3 font-display text-3xl font-semibold tracking-tight text-ink-900 sm:text-4xl">
             <span className="font-light">Escolha o seu modo. </span>
-            <span className="gradient-text">Comece com 3 grátis.</span>
+            <span className="gradient-text">A primeira é grátis.</span>
           </h2>
         </Rise>
         <Rise dist={14} delay={0.14}>
           <p className="mt-4 text-[14px] font-light text-ink-400">
-            Você ganha 3 transcrições grátis para testar. Assine quando quiser,
+            Você ganha uma transcrição grátis para testar. Assine quando quiser,
             cancele quando quiser.
           </p>
         </Rise>
@@ -296,8 +296,8 @@ const FAQS = [
     a: 'O Transcript é feito para o português do Brasil, do vocabulário clínico ao das reuniões, aulas e entrevistas. Termos técnicos, siglas, medicamentos e posologia são o dia a dia dele.',
   },
   {
-    q: 'Como funcionam as 3 transcrições grátis?',
-    a: 'Ao criar a conta, você ganha 3 transcrições completas, sem cartão. Deu pra sentir o valor, você escolhe o plano.',
+    q: 'Como funciona a transcrição grátis?',
+    a: 'Ao criar a conta, você ganha uma transcrição completa, sem cartão. Deu pra sentir o valor, você escolhe o plano.',
   },
   {
     q: 'Posso cancelar quando quiser?',
@@ -477,7 +477,7 @@ export function FinalCta() {
         viewport={{ once: true }}
         transition={{ duration: 0.6, delay: 0.35 }}
       >
-        3 transcrições grátis. Sem cartão.
+        Primeira transcrição grátis. Sem cartão.
       </motion.p>
     </section>
   )
