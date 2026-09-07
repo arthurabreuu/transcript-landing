@@ -17,12 +17,19 @@ import { MaskRise, Rise } from '../motion/primitives'
 // Preços e horas em sincronia com o backend (PLAN_CATALOG em
 // app/services/professional_entitlement.py), a fonte da verdade. Não inventar
 // números aqui: qualquer mudança de preço/franquia acontece lá primeiro.
+//
+// `annualTotal` é o valor CHEIO cobrado uma vez por ano, e é ele que precisa
+// bater centavo a centavo com a oferta anual da Cakto: é esse número que o
+// comprador vê na fatura. O "/mês no anual" do card é derivado dele (total/12),
+// nunca o contrário, senão o arredondamento do mensal desloca o total e a
+// landing passa a anunciar um preço que o checkout não cobra. Hoje o anual é
+// exatamente 10x o mensal, ou seja, os 2 meses grátis que o toggle promete.
 const PLANS = [
   {
     name: 'Geral',
     desc: 'Reuniões, aulas, palestras e entrevistas com transcrição automática',
-    monthly: 19.9,
-    annualMonthly: 9.9,
+    monthly: 49.9,
+    annualTotal: 499,
     features: [
       'Transcrição automática de reuniões, aulas, palestras e entrevistas',
       '12 horas de áudio por mês (mais, com créditos avulsos)',
@@ -34,8 +41,8 @@ const PLANS = [
   {
     name: 'Clínico',
     desc: 'Consultas e atendimentos com transcrição clínica',
-    monthly: 24.9,
-    annualMonthly: 12.9,
+    monthly: 79.9,
+    annualTotal: 799,
     features: [
       'Transcrição clínica de consultas e atendimentos',
       '15 horas de áudio por mês (mais, com créditos avulsos)',
@@ -48,8 +55,8 @@ const PLANS = [
   {
     name: 'Completo',
     desc: 'Clínico e Geral juntos, num só plano',
-    monthly: 34.9,
-    annualMonthly: 17.9,
+    monthly: 99.9,
+    annualTotal: 999,
     features: [
       'Modos Clínico e Geral (tudo incluso)',
       '20 horas de áudio por mês (mais, com créditos avulsos)',
@@ -137,7 +144,7 @@ export function Pricing() {
               viewport={{ once: true }}
               transition={{ duration: 0.45 }}
             >
-              quase metade do preço
+              2 meses grátis
             </motion.span>
           </button>
         </div>
@@ -146,8 +153,8 @@ export function Pricing() {
       {/* doca de embarque: cápsulas sobem; o Completo assenta 6px acima */}
       <div className="mt-8 grid gap-3 lg:grid-cols-3">
         {PLANS.map((p, i) => {
-          const monthlyShown = annual ? p.annualMonthly : p.monthly
-          const yearTotal = p.annualMonthly * 12
+          const yearTotal = p.annualTotal
+          const monthlyShown = annual ? yearTotal / 12 : p.monthly
           return (
             <motion.div
               key={p.name}
