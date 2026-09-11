@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/sucesso", "destination": "/sucesso/index.html" }
+  ]
+}
